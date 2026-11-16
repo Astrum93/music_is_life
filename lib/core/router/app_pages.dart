@@ -10,6 +10,7 @@ import 'package:music_is_life/features/contents/presentation/contents_binding.da
 import 'package:music_is_life/features/friends/presentation/friends_binding.dart';
 import 'package:music_is_life/features/messenger/presentation/messenger_binding.dart';
 import 'package:music_is_life/features/messenger/presentation/screen/create_chat_screen.dart';
+import 'package:music_is_life/features/music/presentation/music_binding.dart';
 import 'package:music_is_life/features/profile/presentation/my_page_screen.dart';
 import 'package:music_is_life/features/profile/presentation/profile_binding.dart';
 import 'package:music_is_life/main/tab/home/home_fragment.dart';
@@ -34,7 +35,12 @@ abstract final class AppPages {
     GetPage(
       name: Routes.home,
       page: () => const HomeFragment(),
-      bindings: [ContentsBinding(), FriendsBinding(), MessengerBinding()],
+      bindings: [
+        ContentsBinding(),
+        FriendsBinding(),
+        MessengerBinding(),
+        MusicBinding(),
+      ],
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -45,6 +51,7 @@ abstract final class AppPages {
         ContentsBinding(),
         FriendsBinding(),
         MessengerBinding(),
+        MusicBinding(),
       ],
       middlewares: [AuthMiddleware()],
     ),

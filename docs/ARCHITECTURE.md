@@ -73,5 +73,5 @@ lib/
 | 3b | `feature/ca-profile` | 프로필 이전, 메일·전화번호를 UserPrivate로 분리 | ✅ |
 | 3c | `feature/ca-contents` | 게시물(작성·피드·좋아요·내 게시물·라운지) 이전 | ✅ |
 | 4 | `feature/ca-friends`, `feature/ca-messenger` | 친구·팔로우, 메신저 이전 | ✅ |
-| 5 | `feature/ca-music` | Spotify(PKCE 전환)·YouTube 이전 | |
+| 5 | `feature/ca-music` | Spotify(PKCE 전환, CLIENT_SECRET 제거)·YouTube·마이 뮤직 이전 | ✅ |
 | 6 | `feature/ca-cleanup` | 옛 폴더와 안 쓰는 패키지 제거, Repository 테스트 | |

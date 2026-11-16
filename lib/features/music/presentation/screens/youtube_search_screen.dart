@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:music_is_life/main/tab/home/screen/widget/search_youtube_music.dart';
+import 'package:music_is_life/features/music/presentation/widgets/youtube_search_widget.dart';
 
-class MusicSearchScreen extends StatefulWidget {
-  const MusicSearchScreen({super.key});
+class YoutubeSearchScreen extends StatefulWidget {
+  const YoutubeSearchScreen({super.key});
 
   @override
-  State<MusicSearchScreen> createState() => _MusicSearchScreenState();
+  State<YoutubeSearchScreen> createState() => _YoutubeSearchScreenState();
 }
 
-class _MusicSearchScreenState extends State<MusicSearchScreen> {
+class _YoutubeSearchScreenState extends State<YoutubeSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

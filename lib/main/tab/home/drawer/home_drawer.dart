@@ -6,7 +6,6 @@ import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
 import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
-import 'package:music_is_life/spotify/service/spotify_sdk_service.dart';
 
 class HomeDrawer extends StatefulWidget {
   const HomeDrawer({super.key});
@@ -242,29 +241,33 @@ class _HomeDrawerState extends State<HomeDrawer>
 
                                       /// 팔로워
                                       Obx(() {
-                                            final followerCount = Get.find<FriendsController>()
-                                                .relations.value.followers.length;
+                                        final followerCount =
+                                            Get.find<FriendsController>()
+                                                .relations
+                                                .value
+                                                .followers
+                                                .length;
 
-                                            return Column(
-                                              children: [
-                                                const Text(
-                                                  '팔로워',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                height10,
-                                                Text(
-                                                  "$followerCount",
-                                                  style: const TextStyle(
-                                                    color: Colors.grey,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          }),
+                                        return Column(
+                                          children: [
+                                            const Text(
+                                              '팔로워',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            height10,
+                                            Text(
+                                              "$followerCount",
+                                              style: const TextStyle(
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
                                     ],
                                   ),
                                 ),
@@ -295,30 +298,6 @@ class _HomeDrawerState extends State<HomeDrawer>
                                       Colors.grey.withValues(alpha: 0.8)),
                               icon: const Icon(Icons.logout_rounded),
                               label: const Text('Logout'),
-                            ),
-                          ),
-                        ),
-                        height20,
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 50,
-                          child: Center(
-                            child: TextButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SpotifySdkService()));
-                              },
-                              style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size(120, 40),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  backgroundColor: Colors.green),
-                              icon: const Icon(Icons.multitrack_audio),
-                              label: const Text('SpotifySdkService'),
                             ),
                           ),
                         ),
