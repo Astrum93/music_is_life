@@ -71,7 +71,7 @@ abstract mixin class SpotifyWebApiService {
     final String redirectUri = dotenv.env['REDIRECT_URI'] ?? '';
     AccessTokenResponse? accessToken;
     SpotifyOAuth2Client client = SpotifyOAuth2Client(
-      customUriScheme: 'com.example.naspace',
+      customUriScheme: 'com.naspace.musicislife',
       redirectUri: redirectUri,
     );
     var authResp =
