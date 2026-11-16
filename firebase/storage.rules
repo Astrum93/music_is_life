@@ -1,22 +1,55 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+// Music is Life Storage 보안 규칙
+//
+// - 로그인한 사용자는 모든 이미지를 읽을 수 있다. (프로필, 게시물, 채팅 이미지)
+// - 업로드는 이미지 파일, 10MB 이하만 허용한다.
+// - 프로필·게시물 이미지는 내 uid 경로(파일 이름)로만 올린다.
+// - 기존 파일 덮어쓰기와 삭제는 허용하지 않는다. (앱은 매번 새 파일 이름으로 올린다)
+//
+// 테스트: tool/rules-test (Firebase 에뮬레이터)
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // This rule allows anyone with your Storage bucket reference to view, edit,
-    // and delete all data in your Storage bucket. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Storage bucket will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Storage bucket will be denied until you Update
-    // your rules
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isImageUnder10MB() {
+      return request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Storage의 create는 기존 파일 덮어쓰기도 포함하므로, 파일이 없을 때만 허용한다.
+    function isNewImage() {
+      return resource == null && isImageUnder10MB();
+    }
+
+    // 2026-11 이전에 올라간 파일(이름 기반 경로 등)도 계속 읽을 수 있어야 한다.
     match /{allPaths=**} {
-      allow read, create: if request.auth != null;
+      allow read: if signedIn();
+    }
+
+    // {uid}_profile_{timestamp}.png
+    match /userProfileImage/{fileName} {
+      allow create: if signedIn() && isNewImage()
+        && fileName.matches(request.auth.uid + '_profile_.*');
+    }
+
+    // {uid}_profileBG_{timestamp}.png
+    match /userProfileBG/{fileName} {
+      allow create: if signedIn() && isNewImage()
+        && fileName.matches(request.auth.uid + '_profileBG_.*');
+    }
+
+    // userContents/{uid}/{contentId}.png
+    match /userContents/{uid}/{fileName} {
+      allow create: if signedIn() && isNewImage() && request.auth.uid == uid;
+    }
+
+    // 채팅방 대표 이미지는 방을 만들기 전에 올리므로 로그인만 확인한다.
+    match /userChatImage/{fileName} {
+      allow create: if signedIn() && isNewImage();
     }
   }
 }
