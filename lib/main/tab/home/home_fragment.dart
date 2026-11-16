@@ -6,7 +6,7 @@ import 'package:music_is_life/core/widgets/button/check_button.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/main/tab/home/screen/home_screen.dart';
 import 'package:music_is_life/main/tab/lounge/lounge_fragment.dart';
-import 'package:music_is_life/main/tab/messenger/messenger_fragment.dart';
+import 'package:music_is_life/features/messenger/presentation/messenger_fragment.dart';
 
 import '../../../data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:get/get.dart';

@@ -8,6 +8,8 @@ import 'package:music_is_life/features/auth/presentation/login/login_screen.dart
 import 'package:music_is_life/features/auth/presentation/welcome/welcome_screen.dart';
 import 'package:music_is_life/features/contents/presentation/contents_binding.dart';
 import 'package:music_is_life/features/friends/presentation/friends_binding.dart';
+import 'package:music_is_life/features/messenger/presentation/messenger_binding.dart';
+import 'package:music_is_life/features/messenger/presentation/screen/create_chat_screen.dart';
 import 'package:music_is_life/features/profile/presentation/my_page_screen.dart';
 import 'package:music_is_life/features/profile/presentation/profile_binding.dart';
 import 'package:music_is_life/main/tab/home/home_fragment.dart';
@@ -32,13 +34,24 @@ abstract final class AppPages {
     GetPage(
       name: Routes.home,
       page: () => const HomeFragment(),
-      bindings: [ContentsBinding(), FriendsBinding()],
+      bindings: [ContentsBinding(), FriendsBinding(), MessengerBinding()],
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: Routes.myPage,
       page: () => const MyScreen(),
-      bindings: [ProfileBinding(), ContentsBinding(), FriendsBinding()],
+      bindings: [
+        ProfileBinding(),
+        ContentsBinding(),
+        FriendsBinding(),
+        MessengerBinding(),
+      ],
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: Routes.createChat,
+      page: () => const CreateChatScreen(),
+      binding: CreateChatBinding(),
       middlewares: [AuthMiddleware()],
     ),
   ];

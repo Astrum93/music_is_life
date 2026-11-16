@@ -1,11 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/constant/constants.dart';
+import 'package:music_is_life/features/messenger/presentation/messenger_controller.dart';
+import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 
 class ChatBubbleWidget extends StatefulWidget {
   final String message;
+
   /// 보낸 사람 uid (UserInfo 문서 ID, 프로필 사진 조회용)
   final String senderUid;
 
@@ -23,20 +26,18 @@ class ChatBubbleWidget extends StatefulWidget {
 }
 
 class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
+  // 보낸 사람 프로필 스트림을 build마다 새로 만들지 않도록 한 번만 만든다.
+  late final Stream<UserProfile?> _sender =
+      Get.find<MessengerController>().watchSender(widget.senderUid);
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('UserInfo')
-          .doc(widget.senderUid)
-          .snapshots(),
+    return StreamBuilder<UserProfile?>(
+      stream: _sender,
       builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        var userProfileImage = snapshot.data!.get('userProfileImage');
+        // 탈퇴 등으로 프로필이 없어도 메시지는 보여준다. (예전에는 로딩만 계속 돌았다)
+        final userProfileImage =
+            snapshot.data?.profileImageUrl ?? baseProfileImage;
         return Row(
           mainAxisAlignment:
               widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -72,7 +73,8 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           child: Text(
                             widget.time,
                             style: TextStyle(
-                              color: AppColors.veryDarkGrey.withValues(alpha: 0.7),
+                              color:
+                                  AppColors.veryDarkGrey.withValues(alpha: 0.7),
                             ),
                           ),
                         )
@@ -92,7 +94,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(50),
                             child: Image.network(
-                              userProfileImage ?? baseProfileImage,
+                              userProfileImage,
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
                             ),
@@ -126,7 +128,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(50),
                             child: Image.network(
-                              userProfileImage ?? baseProfileImage,
+                              userProfileImage,
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
                             ),
@@ -165,7 +167,8 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           child: Text(
                             widget.time,
                             style: TextStyle(
-                              color: AppColors.veryDarkGrey.withValues(alpha: 0.7),
+                              color:
+                                  AppColors.veryDarkGrey.withValues(alpha: 0.7),
                             ),
                           ),
                         )

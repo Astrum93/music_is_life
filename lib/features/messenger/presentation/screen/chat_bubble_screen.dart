@@ -1,58 +1,54 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
-import 'package:music_is_life/main/tab/messenger/chat_widget/chat_bubble_widget.dart';
+import 'package:music_is_life/features/messenger/domain/entities/chat.dart';
+import 'package:music_is_life/features/messenger/presentation/chat_widget/chat_bubble_widget.dart';
+import 'package:music_is_life/features/messenger/presentation/messenger_controller.dart';
 
+/// 채팅방
 class ChatBubbleScreen extends StatefulWidget {
-  final DocumentSnapshot<Map<String, dynamic>> doc;
+  const ChatBubbleScreen({required this.room, super.key});
 
-  const ChatBubbleScreen({required this.doc, super.key});
+  final ChatRoom room;
 
   @override
   State<ChatBubbleScreen> createState() => _ChatBubbleScreenState();
 }
 
-class _ChatBubbleScreenState extends State<ChatBubbleScreen>
-    with FirebaseAuthUser {
+class _ChatBubbleScreenState extends State<ChatBubbleScreen> {
   var _userMessage = '';
   final _controller = TextEditingController();
-  final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
 
-  /// FireStore에 저장하는 함수
-  Future<void> saveFireStore(String chatId) async {
-    DateTime now = DateTime.now();
-    DateTime hourTimestamp = DateTime(
-        now.year, now.month, now.day, now.hour, now.minute, now.microsecond);
+  MessengerController get _messenger => Get.find<MessengerController>();
 
-    await _fireStore
-        .collection('UserChats')
-        .doc(chatId)
-        .collection('messages')
-        .doc('$hourTimestamp')
-        .set({
-      'sender': currentUid,
-      // 보낸 사람 이름은 화면 표시용으로 함께 저장한다.
-      'senderName': displayName,
-      'text': _userMessage,
-      'timestamp': Timestamp.fromDate(now),
-    });
+  // 메시지 스트림을 build마다 새로 만들지 않도록 한 번만 만든다.
+  late final Stream<List<ChatMessage>> _messages =
+      _messenger.watchMessages(widget.room.id);
 
-    setState(() {
-      _userMessage = '';
-    });
-
+  Future<void> _send() async {
+    final result = await _messenger.send(widget.room.id, _userMessage);
+    if (!mounted) return;
+    if (result case Failed(:final failure)) {
+      showErrorSnackBar(context, failure.message);
+      return;
+    }
+    setState(() => _userMessage = '');
     _controller.clear();
-
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var chatName = widget.doc.get('chatName');
-    // 채팅방 문서 ID (예전 방은 방 이름, 새 방은 자동 ID)
-    final chatId = widget.doc.id;
+    final chatName = widget.room.name;
 
     return SafeArea(
       child: Scaffold(
@@ -69,13 +65,8 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                 decoration: const BoxDecoration(
                   color: Colors.white,
                 ),
-                child: StreamBuilder(
-                  stream: _fireStore
-                      .collection('UserChats')
-                      .doc(chatId)
-                      .collection('messages')
-                      .orderBy('timestamp', descending: true)
-                      .snapshots(),
+                child: StreamBuilder<List<ChatMessage>>(
+                  stream: _messages,
                   builder: (context, snapshot) {
                     /// error가 발생한 경우
                     if (snapshot.hasError) {
@@ -96,9 +87,7 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                       );
                     }
 
-                    QuerySnapshot messagesSnapshot = snapshot.data!;
-                    List<QueryDocumentSnapshot> messagesDocs =
-                        messagesSnapshot.docs;
+                    final messagesDocs = snapshot.data!;
                     return ListView.builder(
                       itemCount: messagesDocs.length,
                       reverse: true,
@@ -106,21 +95,16 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                         /// 각 메세지 문서
                         var message = messagesDocs[index];
 
-                        // Timestamp를 DateTime으로 변환
-                        DateTime dateTime = message['timestamp'].toDate();
-
                         // DateTime을 포맷팅
                         String formattedDateTime =
-                            DateFormat.Hm().format(dateTime).toString();
+                            DateFormat.Hm().format(message.sentAt).toString();
                         return Column(
                           children: [
                             ChatBubbleWidget(
-                              message['text'],
-                              message['sender'].toString() == currentUid,
-                              message['sender'],
-                              (message.data() as Map<String, dynamic>).containsKey('senderName')
-                                  ? message['senderName']
-                                  : message['sender'],
+                              message.text,
+                              _messenger.isMine(message),
+                              message.senderUid,
+                              message.senderName,
                               formattedDateTime,
                             ),
                             height10,
@@ -157,6 +141,9 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                         ),
                         contentPadding: EdgeInsets.all(4),
                       ),
+                      onSubmitted: (_) {
+                        if (_userMessage.trim().isNotEmpty) _send();
+                      },
                       onChanged: (value) {
                         setState(() {
                           _userMessage = value;
@@ -165,11 +152,7 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                     ),
                   ),
                   IconButton(
-                    onPressed: _userMessage.trim().isEmpty
-                        ? null
-                        : () async {
-                            await saveFireStore(chatId);
-                          },
+                    onPressed: _userMessage.trim().isEmpty ? null : _send,
                     icon: const Icon(
                       Icons.send,
                       color: Colors.blueAccent,

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/widgets/button/check_button.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/main/tab/messenger/data/chat_data.dart';
+import 'package:music_is_life/features/messenger/presentation/create_chat_controller.dart';
 
 class EditChatName extends StatefulWidget {
   const EditChatName({super.key});
@@ -11,7 +12,9 @@ class EditChatName extends StatefulWidget {
   State<EditChatName> createState() => _EditChatNameState();
 }
 
-class _EditChatNameState extends State<EditChatName> with ChatDataProvider {
+class _EditChatNameState extends State<EditChatName> {
+  CreateChatController get _controller => Get.find<CreateChatController>();
+
   String? chatName;
 
   @override
@@ -68,32 +71,11 @@ class _EditChatNameState extends State<EditChatName> with ChatDataProvider {
             icon: Icons.check,
             iconColor: Colors.greenAccent,
             onTap: () {
-              if (chatName != null) {
-                chatData.chatName.value = chatName.toString();
-                Navigator.of(context).pop();
-              } else {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: Colors.redAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10.0),
-                        topRight: Radius.circular(10.0),
-                      ),
-                    ),
-                    content: Text(
-                      '알수없는 오류로 실행 되지 않았습니다.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    duration: Duration(seconds: 3),
-                  ),
-                );
+              // 예전에는 아무것도 입력하지 않고 확인을 누르면 "알수없는 오류" 메시지가 떴다.
+              if (chatName != null && chatName!.trim().isNotEmpty) {
+                _controller.name.value = chatName!.trim();
               }
+              Navigator.of(context).pop();
             },
           ),
         ],

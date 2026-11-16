@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
-import 'package:music_is_life/main/tab/messenger/chat_widget/edit/edit_chat_image.dart';
-import 'package:music_is_life/main/tab/messenger/chat_widget/edit/edit_chat_name.dart';
-import 'package:music_is_life/main/tab/messenger/data/chat_data.dart';
+import 'package:music_is_life/features/messenger/presentation/chat_widget/edit/edit_chat_image.dart';
+import 'package:music_is_life/features/messenger/presentation/chat_widget/edit/edit_chat_name.dart';
+import 'package:music_is_life/features/messenger/presentation/create_chat_controller.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({
@@ -16,13 +15,8 @@ class ChatWidget extends StatefulWidget {
   State<ChatWidget> createState() => _ChatWidgetState();
 }
 
-class _ChatWidgetState extends State<ChatWidget>
-    with ChatDataProvider, FirebaseAuthUser {
-  @override
-  void initState() {
-    Get.put(ChatData());
-    super.initState();
-  }
+class _ChatWidgetState extends State<ChatWidget> {
+  CreateChatController get _controller => Get.find<CreateChatController>();
 
   // 이미지 수정 팝업창
   void showAlertChatImage(BuildContext context) {
@@ -88,7 +82,7 @@ class _ChatWidgetState extends State<ChatWidget>
                         color: AppColors.veryDarkGrey,
                         borderRadius: BorderRadius.all(Radius.circular(20)),
                       ),
-                      child: chatData.chatImage.isEmpty
+                      child: _controller.imageUrl.value.isEmpty
                           ? const Icon(
                               Icons.add,
                               color: Colors.grey,
@@ -100,7 +94,7 @@ class _ChatWidgetState extends State<ChatWidget>
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
                                 child: Image.network(
-                                  chatData.chatImage.toString(),
+                                  _controller.imageUrl.value,
                                   fit: BoxFit.cover,
                                   alignment: Alignment.center,
                                 ),
@@ -125,9 +119,9 @@ class _ChatWidgetState extends State<ChatWidget>
                           child: SizedBox(
                             width: 120,
                             child: Text(
-                              chatData.chatName.isEmpty
+                              _controller.name.value.isEmpty
                                   ? '채팅방 이름'
-                                  : chatData.chatName.toString(),
+                                  : _controller.name.value,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                   color: Colors.black,
@@ -153,9 +147,9 @@ class _ChatWidgetState extends State<ChatWidget>
                     SizedBox(
                       width: 120,
                       child: Text(
-                        chatData.member.isEmpty
+                        _controller.members.isEmpty
                             ? '채팅 멤버'
-                            : chatData.memberNames.values.join(','),
+                            : _controller.members.values.join(','),
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             color: Colors.black,
@@ -175,11 +169,10 @@ class _ChatWidgetState extends State<ChatWidget>
             right: 35,
             child: IconButton(
               onPressed: () {},
-              icon: Icon(
+              // 만드는 중인 방이라 즐겨찾기는 아직 꺼진 상태로 보여준다.
+              icon: const Icon(
                 Icons.stars_rounded,
-                color: chatData.likedMember.contains(currentUid)
-                    ? Colors.amberAccent
-                    : Colors.grey,
+                color: Colors.grey,
                 size: 30,
               ),
             ),
@@ -204,7 +197,7 @@ class _ChatWidgetState extends State<ChatWidget>
                     size: 20,
                   ),
                   width10,
-                  Text('${chatData.member.length}',
+                  Text('${_controller.members.length}',
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,

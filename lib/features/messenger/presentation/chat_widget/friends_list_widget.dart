@@ -3,59 +3,41 @@ import 'package:get/get.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/features/friends/presentation/add_friends/friend_profile_widget.dart';
-import 'package:music_is_life/main/tab/messenger/data/chat_data.dart';
+import 'package:music_is_life/features/messenger/presentation/create_chat_controller.dart';
+import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 
-class FriendsListWidget extends StatefulWidget {
+/// 새 채팅방에 초대할 친구 선택 (누르면 추가/제외)
+class FriendsListWidget extends StatelessWidget {
   const FriendsListWidget({super.key});
 
   @override
-  State<FriendsListWidget> createState() => _FriendsListWidgetState();
-}
-
-class _FriendsListWidgetState extends State<FriendsListWidget>
-    with ChatDataProvider {
-  @override
-  void initState() {
-    Get.put(ChatData());
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    Get.delete<ChatData>();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => SizedBox(
+    final chat = Get.find<CreateChatController>();
+    final friends = Get.find<FriendsController>();
+    return Obx(() {
+      final profiles = friends.friendProfiles.toList();
+      return SizedBox(
         width: MediaQuery.of(context).size.width,
         height: 200,
         child: ListView.builder(
-          itemCount: chatData.friendsUserInfoDocs.length,
+          itemCount: profiles.length,
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
-            String userName =
-                chatData.friendsUserInfoDocs[index].get('userName');
-            String friendUid = chatData.friendsUserInfoDocs[index].id;
+            final friend = profiles[index];
+            final selected = chat.isMember(friend.uid);
             return GestureDetector(
-              onTap: () {
-                setState(() => chatData.toggleMember(friendUid, userName));
-              },
+              onTap: () => chat.toggleMember(friend.uid, friend.userName),
               child: Column(
                 children: [
                   FriendProfileWidget(
-                      imageUrl: chatData.friendsUserInfoDocs[index]
-                          .get('userProfileImage')
-                          .toString(),
+                      imageUrl: friend.profileImageUrl,
                       boxColor: Colors.transparent,
-                      borderColor: chatData.member.contains(friendUid)
+                      borderColor: selected
                           ? Colors.amberAccent
                           : AppColors.veryDarkGrey),
                   height10,
                   Text(
-                    userName,
+                    friend.userName,
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -64,7 +46,7 @@ class _FriendsListWidgetState extends State<FriendsListWidget>
             );
           },
         ),
-      ),
-    );
+      );
+    });
   }
 }

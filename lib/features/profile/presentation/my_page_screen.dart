@@ -12,7 +12,7 @@ import 'package:music_is_life/core/router/app_routes.dart';
 import 'package:music_is_life/features/profile/presentation/profile_controller.dart';
 import 'package:music_is_life/features/profile/presentation/widgets/edit_introduction_dialog.dart';
 import 'package:music_is_life/features/profile/presentation/widgets/edit_profile_image_dialog.dart';
-import 'package:music_is_life/main/tab/messenger/messenger_fragment.dart';
+import 'package:music_is_life/features/messenger/presentation/messenger_fragment.dart';
 import 'package:music_is_life/spotify/service/spotify_web_api_service.dart';
 import 'package:spotify_sdk/models/connection_status.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';

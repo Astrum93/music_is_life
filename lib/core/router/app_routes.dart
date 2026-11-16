@@ -8,4 +8,5 @@ abstract final class Routes {
   static const join = '/join';
   static const home = '/home';
   static const myPage = '/my-page';
+  static const createChat = '/create-chat';
 }
