@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - modal_progress_hud_nsn (0.4.0):
+    - Flutter
+  - spotify_sdk (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - modal_progress_hud_nsn (from `.symlinks/plugins/modal_progress_hud_nsn/ios`)
+  - spotify_sdk (from `.symlinks/plugins/spotify_sdk/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  modal_progress_hud_nsn:
+    :path: ".symlinks/plugins/modal_progress_hud_nsn/ios"
+  spotify_sdk:
+    :path: ".symlinks/plugins/spotify_sdk/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  modal_progress_hud_nsn: cfd98c378f75d8fd1c4f9fc25d972e2d3bb799a6
+  spotify_sdk: a48400bb29f70c4fe251ebfdc9135c37097ac5ca
+
+PODFILE CHECKSUM: 4b015915ec662986b54bf30ab778da63f7dda016
+
+COCOAPODS: 1.16.2
