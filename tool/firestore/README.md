@@ -20,6 +20,8 @@
 |---|---|---|
 | `npm run backup` | Firestore 전체(하위 컬렉션 포함)와 Auth 사용자 목록을 `backups/`에 JSON으로 저장 | 없음 |
 | `npm run inspect` | 컬렉션별 문서 수, Auth↔UserInfo 연결, 이름 중복, 이름으로 저장된 참조 필드 확인 | 없음 |
+| `node migrate-to-uid.mjs [--apply]` | 사용자 식별자를 이름에서 uid로 이전 (기본 dry-run, 여러 번 실행해도 안전) | `--apply` 시 |
+| `node restore.mjs <백업파일> [--apply]` | 백업 파일로 Firestore 컬렉션을 되돌림 (기본 dry-run) | `--apply` 시 |
 
 - `backups/`에는 개인정보가 들어 있으므로 git에 올리지 않는다 (`.gitignore` 처리됨).
 - 데이터를 바꾸는 이전 스크립트는 기본이 dry-run이어야 하고, 실행 전에 반드시 `npm run backup`을 먼저 돌린다.
