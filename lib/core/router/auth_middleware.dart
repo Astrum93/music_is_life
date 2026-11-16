@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
+import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
 
 /// 로그인이 필요한 화면에 붙이는 미들웨어.
 ///
@@ -9,7 +9,7 @@ import 'package:music_is_life/core/router/app_routes.dart';
 class AuthMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    final isLoggedIn = Get.find<FirebaseAuth>().currentUser != null;
+    final isLoggedIn = Get.find<SessionController>().isLoggedIn;
     return isLoggedIn ? null : const RouteSettings(name: Routes.welcome);
   }
 }

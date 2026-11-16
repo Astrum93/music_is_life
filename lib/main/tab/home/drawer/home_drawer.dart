@@ -1,6 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:music_is_life/core/router/app_routes.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
+import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
 import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
 import 'package:music_is_life/spotify/service/spotify_sdk_service.dart';
@@ -305,11 +307,10 @@ class _HomeDrawerState extends State<HomeDrawer>
                           bottom: 0,
                           child: Center(
                             child: TextButton.icon(
-                              onPressed: () {
-                                // FirebaseAuth signOut
-                                FirebaseAuth.instance.signOut();
-
-                                Navigator.pop(context);
+                              onPressed: () async {
+                                // TODO(ca-home): 홈을 옮길 때 Binding으로 받도록 변경
+                                await Get.find<SessionController>().logout();
+                                Get.offAllNamed(Routes.welcome);
                               },
                               style: TextButton.styleFrom(
                                   foregroundColor: Colors.white,

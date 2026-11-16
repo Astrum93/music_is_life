@@ -34,7 +34,7 @@ lib/
 
 ## GetX 규칙
 
-1. **`Get.find`는 Binding에서만 호출한다.** Controller와 Repository는 필요한 의존성을 생성자로 받는다.
+1. **Controller·Repository 안에서는 `Get.find`를 호출하지 않는다.** 필요한 의존성은 생성자로 받고, 조립은 Binding에서 한다. 화면은 `Get.find<XxxController>()`(또는 `GetView`)로 자기 Controller만 받는다.
    ```dart
    class ProfileBinding extends Bindings {
      @override
@@ -65,11 +65,11 @@ lib/
 
 기존 코드(`lib/main`, `lib/data`, `lib/spotify`)는 단계별로 `lib/features`로 옮긴다. 단계마다 `dev`에서 브랜치를 따고, 앱이 동작하는 상태로 `dev`에 머지한다.
 
-| 단계 | 브랜치 | 내용 |
-|---|---|---|
-| 1 | `feature/ca-core` | GetX 4.7, freezed, `core/` 뼈대, GetMaterialApp 전환 |
-| 2 | `feature/ca-auth` | 로그인·회원가입 이전, 가입 컬렉션 이름 버그와 로그아웃 크래시 수정 |
-| 3 | `feature/ca-profile`, `feature/ca-contents` | 프로필·게시물 이전, Firestore 문서 ID를 uid로 변경 |
-| 4 | `feature/ca-friends`, `feature/ca-messenger` | 친구·메신저 이전 |
-| 5 | `feature/ca-music` | Spotify(PKCE 전환)·YouTube 이전 |
-| 6 | `feature/ca-cleanup` | 옛 폴더와 안 쓰는 패키지 제거, Repository 테스트 |
+| 단계 | 브랜치 | 내용 | 상태 |
+|---|---|---|---|
+| 1 | `feature/ca-core` | GetX 4.7, freezed, `core/` 뼈대, GetMaterialApp 전환 | ✅ |
+| 2 | `feature/ca-auth` | 로그인·회원가입 이전, 가입 컬렉션 이름 버그와 로그아웃 크래시 수정 | ✅ |
+| 3 | `feature/ca-profile`, `feature/ca-contents` | 프로필·게시물 이전, Firestore 문서 ID를 uid로 변경 | |
+| 4 | `feature/ca-friends`, `feature/ca-messenger` | 친구·메신저 이전 | |
+| 5 | `feature/ca-music` | Spotify(PKCE 전환)·YouTube 이전 | |
+| 6 | `feature/ca-cleanup` | 옛 폴더와 안 쓰는 패키지 제거, Repository 테스트 | |

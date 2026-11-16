@@ -9,7 +9,10 @@ import 'package:music_is_life/main/tab/lounge/lounge_fragment.dart';
 import 'package:music_is_life/main/tab/messenger/messenger_fragment.dart';
 
 import '../../../data/memory/firebase/firebase_auth/firebase_auth_user.dart';
-import '../../welcome_screen.dart';
+import 'package:get/get.dart';
+import 'package:music_is_life/core/router/app_routes.dart';
+import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
+import 'package:music_is_life/features/auth/presentation/welcome/welcome_screen.dart';
 import '../search/screen/search_fragment.dart';
 
 class HomeFragment extends StatefulWidget {
@@ -148,11 +151,9 @@ class _HomeFragmentState extends State<HomeFragment> with FirebaseAuthUser {
                   icon: Icons.check,
                   iconColor: Colors.greenAccent,
                   onTap: () async {
-                    await FirebaseAuth.instance.signOut();
-                    if (context.mounted) {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const WelcomeScreen()));
-                    }
+                    // TODO(ca-home): 홈을 옮길 때 Binding으로 받도록 변경
+                    await Get.find<SessionController>().logout();
+                    Get.offAllNamed(Routes.welcome);
                   },
                 ),
               ],
