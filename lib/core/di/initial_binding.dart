@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:music_is_life/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:music_is_life/features/auth/domain/repositories/auth_repository.dart';
 import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
+import 'package:music_is_life/features/profile/data/repositories/firebase_profile_repository.dart';
+import 'package:music_is_life/features/profile/domain/repositories/profile_repository.dart';
 
 /// 앱 시작 시 한 번 등록하는 전역 의존성.
 ///
@@ -23,5 +25,11 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
     Get.put(SessionController(Get.find<AuthRepository>()), permanent: true);
+
+    // 프로필은 마이페이지뿐 아니라 게시물 작성자 표시 등 여러 기능에서 쓴다.
+    Get.put<ProfileRepository>(
+      FirebaseProfileRepository(Get.find<FirebaseFirestore>(), Get.find<FirebaseStorage>()),
+      permanent: true,
+    );
   }
 }

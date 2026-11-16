@@ -1,5 +1,4 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/main/tab/lounge/slider/lounge_slider_indicator.dart';
@@ -18,7 +17,6 @@ class LoungeFragment extends StatefulWidget {
 class _LoungeFragmentState extends State<LoungeFragment> {
   int _current = 0;
   final CarouselSliderController _controller = CarouselSliderController();
-  final _uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +39,7 @@ class _LoungeFragmentState extends State<LoungeFragment> {
           LoungeSliderIndicator(controller: _controller, current: _current),
           height10,
           if (_current == 0) const CategoryAll(),
-          if (_current == 1) CategoryCurrent(uid: _uid),
+          if (_current == 1) const CategoryCurrent(),
         ],
       ),
     );

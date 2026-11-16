@@ -17,8 +17,8 @@ import 'package:music_is_life/spotify/service/spotify_web_api_service.dart';
 import 'package:spotify_sdk/models/connection_status.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 
-import 'package:music_is_life/main/mypage/contents/create/create_screen.dart';
-import 'package:music_is_life/main/mypage/contents/user_cotents_screen.dart';
+import 'package:music_is_life/features/contents/presentation/screens/create_content_screen.dart';
+import 'package:music_is_life/features/contents/presentation/widgets/my_contents_grid.dart';
 import 'package:music_is_life/main/mypage/music/music_search_screen.dart';
 
 class MyScreen extends StatefulWidget {
@@ -392,7 +392,7 @@ class _MyScreenState extends State<MyScreen>
 
                       // Create Contents
                       MiniButton(
-                          builder: (context) => const CreateScreen(),
+                          builder: (context) => const CreateContentScreen(),
                           text: 'Create Contents',
                           icon: Icons.mode_edit_outline_rounded),
                     ],
@@ -402,7 +402,7 @@ class _MyScreenState extends State<MyScreen>
 
                 const Padding(
                   padding: EdgeInsets.only(left: 12, right: 12),
-                  child: UserContentsScreen(),
+                  child: MyContentsGrid(),
                 ),
               ],
             ),
