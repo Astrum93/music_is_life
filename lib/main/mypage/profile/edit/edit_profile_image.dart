@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:music_is_life/core/utils/image_upload_metadata.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../mypage_screen.dart';
@@ -48,7 +49,7 @@ class _EditProfileImageState extends State<EditProfileImage> {
         .child('userProfileImage')
         .child('${_uid}_profile_${DateTime.now().millisecondsSinceEpoch}.png');
     // 클라우드 스토리지 버킷에 저장
-    await refImage.putFile(pickedImage!);
+    await refImage.putFile(pickedImage!, imageUploadMetadata(pickedImage!));
 
     // 저장한 이미지 url로 변환
     final myurl = await refImage.getDownloadURL();

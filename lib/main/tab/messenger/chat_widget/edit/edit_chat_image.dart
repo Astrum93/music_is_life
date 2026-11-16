@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:music_is_life/core/utils/image_upload_metadata.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
@@ -41,7 +42,7 @@ class _EditChatImageState extends State<EditChatImage> with ChatDataProvider {
         // 예전에는 폰의 임시 파일 경로(file:/data/...)가 그대로 파일 이름이 됐다.
         .child('${DateTime.now().millisecondsSinceEpoch}_chatImage.png');
     // 클라우드 스토리지 버킷에 저장
-    await refImage.putFile(pickedImage!);
+    await refImage.putFile(pickedImage!, imageUploadMetadata(pickedImage!));
 
     // 저장한 이미지 url로 변환
     final myUrl = await refImage.getDownloadURL();
