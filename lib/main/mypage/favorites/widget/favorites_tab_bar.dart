@@ -14,7 +14,7 @@ class FavoritesTabBar extends StatelessWidget {
         fontWeight: FontWeight.bold,
       ),
       overlayColor: WidgetStatePropertyAll(
-        Colors.lightBlue.withOpacity(0.2),
+        Colors.lightBlue.withValues(alpha: 0.2),
       ),
       indicatorWeight: 0.1,
       indicatorColor: Colors.grey,

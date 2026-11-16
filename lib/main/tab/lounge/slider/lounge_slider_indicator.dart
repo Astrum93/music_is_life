@@ -1,5 +1,5 @@
 import 'package:carousel_slider/carousel_controller.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:music_is_life/main/tab/lounge/slider/slider_items.dart';
 
 class LoungeSliderIndicator extends StatelessWidget {
@@ -27,7 +27,7 @@ class LoungeSliderIndicator extends StatelessWidget {
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white
-                    .withOpacity(_current == entry.key ? 0.9 : 0.4)),
+                    .withValues(alpha: _current == entry.key ? 0.9 : 0.4)),
           ),
         );
       }).toList(),
