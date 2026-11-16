@@ -1,63 +1,32 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music_is_life/core/widgets/box/expanded_box.dart';
 import 'package:music_is_life/core/widgets/box/hash_tag_box.dart';
 import 'package:music_is_life/core/widgets/subject_container.dart';
 
 import 'package:music_is_life/core/widgets/short_line.dart';
+import 'package:music_is_life/features/contents/domain/entities/content.dart';
+import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
+import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 
-class ContentsScreen extends StatefulWidget {
-  final String contentSubject,
-      contents,
-      contentsImage,
-      id,
-      formattedDateTime,
-      trackName,
-      trackImage,
-      artistsName;
-  final List hashTags;
+class ContentDetailScreen extends StatefulWidget {
+  const ContentDetailScreen({super.key, required this.content});
 
-  const ContentsScreen({
-    super.key,
-    required this.contentSubject,
-    required this.contents,
-    required this.contentsImage,
-    required this.id,
-    required this.formattedDateTime,
-    required this.hashTags,
-    required this.trackName,
-    required this.trackImage,
-    required this.artistsName,
-  });
+  final Content content;
 
   @override
-  State<ContentsScreen> createState() => _ContentsScreenState();
+  State<ContentDetailScreen> createState() => _ContentDetailScreenState();
 }
 
-class _ContentsScreenState extends State<ContentsScreen> {
-  // FireStore collection 참조 변수
-  CollectionReference userInfoCollection =
-      FirebaseFirestore.instance.collection('UserInfo');
+class _ContentDetailScreenState extends State<ContentDetailScreen> {
+  ContentsController get _controller => Get.find<ContentsController>();
 
-  // 현재 인증된 유저 이름
-  final _uid = FirebaseAuth.instance.currentUser!.uid;
+  Content get _content => widget.content;
 
-  // 현재 유저 정보를 불러오는 함수
-  _getUserInfo() async {
-    var userinfo = await userInfoCollection.doc(_uid).get();
-    return userinfo.data();
-  }
-
-  // User 정보 불러오기
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _getUserInfo();
-    showMore;
-  }
+  // 해시태그가 3개보다 적은 게시물도 있으므로 빈 문자열로 채운다.
+  late final List<String> _hashTags =
+      [..._content.hashTags, '', '', ''].take(3).toList();
 
   // 좋아요 상태
   var isLiked = false;
@@ -80,11 +49,11 @@ class _ContentsScreenState extends State<ContentsScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // 유저 정보 FutureBuilder
-              FutureBuilder(
-                future: _getUserInfo(),
+              // 작성자 정보 (예전에는 게시물 작성자가 아니라 로그인한 사용자를 보여줬다)
+              StreamBuilder<UserProfile?>(
+                stream: _controller.watchAuthor(_content.authorUid),
                 builder: (context, snapshot) {
-                  return snapshot.hasData
+                  return snapshot.data != null
                       ?
                       // 유저 프로필 사진 및 아이디
                       Padding(
@@ -101,7 +70,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(50),
                                       child: Image.network(
-                                        '${(snapshot.data as Map)['userProfileImage']}',
+                                        snapshot.data!.profileImageUrl,
                                         fit: BoxFit.cover,
                                         alignment: Alignment.center,
                                       ),
@@ -111,7 +80,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
 
                                   // 유저 아이디
                                   Text(
-                                    '${(snapshot.data as Map)['userName']}',
+                                    snapshot.data!.userName,
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold),
@@ -123,7 +92,9 @@ class _ContentsScreenState extends State<ContentsScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    widget.formattedDateTime.substring(0, 10),
+                                    _content.createdAt
+                                        .toString()
+                                        .substring(0, 10),
                                     style: const TextStyle(color: Colors.grey),
                                   )
                                 ],
@@ -136,13 +107,13 @@ class _ContentsScreenState extends State<ContentsScreen> {
               ),
               const SizedBox(height: 20),
 
-              SubjectContainer(text: widget.contentSubject),
+              SubjectContainer(text: _content.title),
 
               const SizedBox(height: 10),
 
               // 게시물 이미지
               Hero(
-                tag: widget.contentsImage,
+                tag: _content.imageUrl,
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -153,7 +124,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                   width: MediaQuery.of(context).size.width,
                   height: 300,
                   child: Image.network(
-                    widget.contentsImage,
+                    _content.imageUrl,
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -168,7 +139,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                       Radius.circular(30),
                     ),
                     child: Image.network(
-                      widget.trackImage,
+                      (_content.track?.imageUrl ?? ''),
                       scale: 6,
                     ),
                   ),
@@ -178,13 +149,13 @@ class _ContentsScreenState extends State<ContentsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          widget.trackName.length > 20
+                          (_content.track?.name ?? '').length > 20
                               ? SizedBox(
-                                  width:
-                                      widget.trackName.length * 11.toDouble(),
+                                  width: (_content.track?.name ?? '').length *
+                                      11.toDouble(),
                                   height: 50,
                                   child: Marquee(
-                                    text: widget.trackName,
+                                    text: (_content.track?.name ?? ''),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20,
@@ -196,7 +167,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                                   ),
                                 )
                               : Text(
-                                  widget.trackName,
+                                  (_content.track?.name ?? ''),
                                   style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -205,13 +176,14 @@ class _ContentsScreenState extends State<ContentsScreen> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                          widget.artistsName.length > 15
+                          (_content.track?.artistsName ?? '').length > 15
                               ? SizedBox(
-                                  width:
-                                      widget.artistsName.length * 11.toDouble(),
+                                  width: (_content.track?.artistsName ?? '')
+                                          .length *
+                                      11.toDouble(),
                                   height: 50,
                                   child: Marquee(
-                                    text: widget.artistsName,
+                                    text: (_content.track?.artistsName ?? ''),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
@@ -223,7 +195,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                                   ),
                                 )
                               : Text(
-                                  widget.artistsName,
+                                  (_content.track?.artistsName ?? ''),
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
@@ -257,7 +229,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                           child: Column(
                             children: [
                               Text(
-                                widget.contents,
+                                _content.body,
                                 overflow: showMore
                                     ? TextOverflow.fade
                                     : TextOverflow.visible,
@@ -307,14 +279,11 @@ class _ContentsScreenState extends State<ContentsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Row(
                   children: [
-                    HashTagBox(
-                        text: widget.hashTags[0], width: 10, fontSize: 15),
+                    HashTagBox(text: _hashTags[0], width: 10, fontSize: 15),
                     const ExpandedBox(),
-                    HashTagBox(
-                        text: widget.hashTags[1], width: 10, fontSize: 15),
+                    HashTagBox(text: _hashTags[1], width: 10, fontSize: 15),
                     const ExpandedBox(),
-                    HashTagBox(
-                        text: widget.hashTags[2], width: 10, fontSize: 15),
+                    HashTagBox(text: _hashTags[2], width: 10, fontSize: 15),
                   ],
                 ),
               ),
