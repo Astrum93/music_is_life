@@ -23,7 +23,7 @@ class _CreateChatScreenState extends State<CreateChatScreen>
   void initState() {
     Get.put(ChatData());
     chatData.getFriendsUserInfo();
-    chatData.member.add(user!.displayName.toString());
+    chatData.toggleMember(currentUid, displayName ?? '');
     chatData.manager.value = user!.email.toString();
     super.initState();
   }
@@ -112,12 +112,13 @@ class _CreateChatScreenState extends State<CreateChatScreen>
                           chatData.chatName.isNotEmpty) {
                         await FirebaseFirestore.instance
                             .collection('UserChats')
-                            .doc(chatData.chatName.toString())
+                            .doc() // 채팅방 이름이 같아도 다른 방을 덮어쓰지 않도록 자동 ID 사용
                             .set({
                           'chatImage': chatData.chatImage.toString(),
                           'chatName': chatData.chatName.toString(),
                           'manager': chatData.manager.toString(),
                           'member': chatData.member.toList(),
+                          'memberNames': Map<String, String>.from(chatData.memberNames),
                           'likedMember': chatData.likedMember.toList(),
                           'createdAt': Timestamp.now(),
                         });

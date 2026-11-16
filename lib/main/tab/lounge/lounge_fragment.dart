@@ -18,7 +18,7 @@ class LoungeFragment extends StatefulWidget {
 class _LoungeFragmentState extends State<LoungeFragment> {
   int _current = 0;
   final CarouselSliderController _controller = CarouselSliderController();
-  final _displayName = FirebaseAuth.instance.currentUser!.displayName;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class _LoungeFragmentState extends State<LoungeFragment> {
           LoungeSliderIndicator(controller: _controller, current: _current),
           height10,
           if (_current == 0) const CategoryAll(),
-          if (_current == 1) CategoryCurrent(displayName: _displayName),
+          if (_current == 1) CategoryCurrent(uid: _uid),
         ],
       ),
     );

@@ -10,8 +10,21 @@ class ChatData extends GetxController {
   RxString chatImage = "".obs;
   RxString chatName = "".obs;
   RxString manager = "".obs;
+  /// 채팅방 멤버 uid 목록 (Firestore 쿼리용)
   RxList member = [].obs;
+  /// 멤버 uid -> 화면에 보여줄 이름
+  RxMap<String, String> memberNames = <String, String>{}.obs;
   RxList likedMember = [].obs;
+
+  void toggleMember(String uid, String name) {
+    if (member.contains(uid)) {
+      member.remove(uid);
+      memberNames.remove(uid);
+    } else {
+      member.add(uid);
+      memberNames[uid] = name;
+    }
+  }
   RxList friendsUserInfoDocs = [].obs;
 
   @override

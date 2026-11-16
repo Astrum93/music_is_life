@@ -23,7 +23,7 @@ class FireStoreDataUtil {
   static Future<DocumentSnapshot<Map<String, dynamic>>> currentUserDoc() async {
     final userInfo = await FirebaseFirestore.instance
         .collection('UserInfo')
-        .doc(FirebaseAuth.instance.currentUser!.displayName)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
     return userInfo;
   }
@@ -33,7 +33,7 @@ class FireStoreDataUtil {
       currentUserFriendsDoc() async {
     final userFriends = await FirebaseFirestore.instance
         .collection('UserFriends')
-        .doc(FirebaseAuth.instance.currentUser!.displayName)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
     return userFriends;
   }
@@ -43,7 +43,7 @@ class FireStoreDataUtil {
     final userChatSnapshot = await FirebaseFirestore.instance
         .collection('UserChats')
         .where('member',
-            arrayContains: FirebaseAuth.instance.currentUser!.displayName)
+            arrayContains: FirebaseAuth.instance.currentUser!.uid)
         .get();
     final docs = userChatSnapshot.docs;
     return docs;
@@ -53,7 +53,7 @@ class FireStoreDataUtil {
   static Future<List<DocumentSnapshot>> getUserPlayListDoc() async {
     final userPlayListSnapshot = await FirebaseFirestore.instance
         .collection('UserInfo')
-        .doc(FirebaseAuth.instance.currentUser!.displayName)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('UserPlayList')
         .get();
     final docs = userPlayListSnapshot.docs;

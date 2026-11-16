@@ -64,7 +64,8 @@ class _HotContentsState extends State<HotContents>
               var time = doc.get('time');
               var hashTags = doc.get('hashTags');
               var likedMember = doc.get('likedMember');
-              var name = doc.get('name');
+              // 이전 전 게시물도 migrate-to-uid로 authorUid가 채워져 있다.
+              final String authorUid = doc.get('authorUid');
               var trackName = doc.get('trackName');
               var trackImage = doc.get('trackImage');
               var artistsName = doc.get('artistsName');
@@ -204,7 +205,7 @@ class _HotContentsState extends State<HotContents>
                             ? const SizedBox()
                             : StreamBuilder(
                                 stream:
-                                    userInfoCollection.doc(name).snapshots(),
+                                    userInfoCollection.doc(authorUid).snapshots(),
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
@@ -234,6 +235,7 @@ class _HotContentsState extends State<HotContents>
                                         context: context,
                                         builder: (context) => UserInfoMini(
                                           profileImage: profileImage,
+                                          uid: authorUid,
                                           name: name,
                                           userProfileInfo: userProfileInfo,
                                         ),
@@ -285,21 +287,21 @@ class _HotContentsState extends State<HotContents>
                                 iconSize: 25,
                                 onPressed: () {
                                   if (!likedMember
-                                      .contains(user!.displayName)) {
-                                    userContentsCollection.doc(title).update({
+                                      .contains(user!.uid)) {
+                                    doc.reference.update({
                                       'likedMember': FieldValue.arrayUnion(
-                                          [user!.displayName])
+                                          [user!.uid])
                                     });
                                   }
-                                  if (likedMember.contains(user!.displayName)) {
-                                    userContentsCollection.doc(title).update({
+                                  if (likedMember.contains(user!.uid)) {
+                                    doc.reference.update({
                                       'likedMember': FieldValue.arrayRemove(
-                                          [user!.displayName])
+                                          [user!.uid])
                                     });
                                   }
                                 },
                                 icon: Icon(
-                                  likedMember.contains(user!.displayName)
+                                  likedMember.contains(user!.uid)
                                       ? Icons.favorite_outlined
                                       : Icons.favorite_border_outlined,
                                   color: Colors.pink,

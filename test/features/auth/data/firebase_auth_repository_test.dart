@@ -64,12 +64,16 @@ void main() {
   });
 
   group('signUp', () {
-    test('UserInfo 컬렉션에 저장한다 (user_info 아님)', () async {
+    test('UserInfo/{uid}에 저장한다 (user_info 아님, 이름이 아닌 uid가 문서 ID)', () async {
       final result = await repository.signUp(params);
 
       expect(result.isSuccess, isTrue);
-      final userInfo = await firestore.collection('UserInfo').doc('뮤직러버').get();
+      final uid = result.valueOrNull!.uid;
+      final userInfo = await firestore.collection('UserInfo').doc(uid).get();
       expect(userInfo.exists, isTrue);
+      expect(userInfo.data()!['uid'], uid);
+      expect(userInfo.data()!['userName'], '뮤직러버');
+      expect((await firestore.collection('UserInfo').doc('뮤직러버').get()).exists, isFalse);
       expect(userInfo.data()!['userMail'], 'lover@example.com');
       expect(userInfo.data()!['userPhoneNumber'], '010-1234-5678');
 
@@ -78,9 +82,12 @@ void main() {
     });
 
     test('UserFriends에 friends/follower/following 빈 배열을 만든다', () async {
-      await repository.signUp(params);
+      final result = await repository.signUp(params);
 
-      final friends = await firestore.collection('UserFriends').doc('뮤직러버').get();
+      final friends = await firestore
+          .collection('UserFriends')
+          .doc(result.valueOrNull!.uid)
+          .get();
       expect(friends.data(), {
         'friends': <String>[],
         'follower': <String>[],
@@ -96,7 +103,8 @@ void main() {
     });
 
     test('이미 사용 중인 이름이면 실패하고 기존 사용자 데이터를 덮어쓰지 않는다', () async {
-      await firestore.collection('UserInfo').doc('뮤직러버').set({
+      await firestore.collection('UserInfo').doc('existing-uid').set({
+        'uid': 'existing-uid',
         'userName': '뮤직러버',
         'userMail': 'original@example.com',
       });
@@ -107,10 +115,11 @@ void main() {
       final failure = (result as Failed).failure as AuthFailure;
       expect(failure.code, 'name-already-in-use');
 
-      final userInfo = await firestore.collection('UserInfo').doc('뮤직러버').get();
-      expect(userInfo.data()!['userMail'], 'original@example.com');
-      final friends = await firestore.collection('UserFriends').doc('뮤직러버').get();
-      expect(friends.exists, isFalse);
+      final userInfo = await firestore.collection('UserInfo').get();
+      expect(userInfo.docs.map((d) => d.id), ['existing-uid']);
+      expect(userInfo.docs.single.data()['userMail'], 'original@example.com');
+      final friends = await firestore.collection('UserFriends').get();
+      expect(friends.docs, isEmpty);
     });
 
     test('이미 가입된 메일이면 AuthFailure를 돌려주고 문서를 만들지 않는다', () async {
@@ -126,11 +135,14 @@ void main() {
     });
 
     test('이름과 메일 앞뒤 공백을 제거해서 저장한다', () async {
-      await repository.signUp(
+      final result = await repository.signUp(
         params.copyWith(name: '  뮤직러버 ', email: ' lover@example.com '),
       );
 
-      final userInfo = await firestore.collection('UserInfo').doc('뮤직러버').get();
+      final userInfo = await firestore
+          .collection('UserInfo')
+          .doc(result.valueOrNull!.uid)
+          .get();
       expect(userInfo.data()!['userName'], '뮤직러버');
       expect(userInfo.data()!['userMail'], 'lover@example.com');
     });

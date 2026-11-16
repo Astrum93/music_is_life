@@ -13,7 +13,7 @@ class FirebaseAuthRepository implements AuthRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  // TODO(ca-profile): 문서 ID를 displayName에서 uid로 바꿀 때 함께 변경한다.
+  // 사용자 문서 ID는 uid다. (2026-11 migrate-to-uid로 이름 -> uid 전환)
   static const _userInfoCollection = 'UserInfo';
   static const _userFriendsCollection = 'UserFriends';
 
@@ -65,32 +65,34 @@ class FirebaseAuthRepository implements AuthRepository {
 
     // 계정은 만들어졌으므로, 이후 단계가 실패하면 계정을 지워서 되돌린다.
     try {
-      final userInfoRef = _firestore.collection(_userInfoCollection).doc(name);
-      final userFriendsRef =
-          _firestore.collection(_userFriendsCollection).doc(name);
+      // 이름은 화면 표시·친구 검색에 쓰이므로 중복을 막는다.
+      // (클라이언트 트랜잭션은 쿼리를 지원하지 않아 완전한 동시성 보장은 아니다.)
+      final sameName = await _firestore
+          .collection(_userInfoCollection)
+          .where('userName', isEqualTo: name)
+          .limit(1)
+          .get();
+      if (sameName.docs.isNotEmpty) {
+        throw const _NameAlreadyInUse();
+      }
 
-      // 이름이 문서 ID라서, 이미 있는 이름으로 가입하면 다른 사용자의 데이터를 덮어쓴다.
-      // 확인과 저장을 트랜잭션으로 묶어서 동시에 같은 이름으로 가입하는 경우도 막는다.
-      await _firestore.runTransaction((tx) async {
-        final existing = await tx.get(userInfoRef);
-        if (existing.exists) {
-          throw const _NameAlreadyInUse();
-        }
-        tx.set(userInfoRef, {
+      final batch = _firestore.batch()
+        ..set(_firestore.collection(_userInfoCollection).doc(user.uid), {
+          'uid': user.uid,
           'userName': name,
           'userMail': params.email.trim(),
           'userPhoneNumber': params.phoneNumber.trim(),
           'userProfileImage': baseProfileImage,
           'userProfileInfo': '',
           'userProfileBgImage': baseProfileBgImage,
-        });
+        })
         // 마이페이지·홈 화면이 follower/following 필드를 바로 읽으므로 빈 배열로 만들어 둔다.
-        tx.set(userFriendsRef, {
+        ..set(_firestore.collection(_userFriendsCollection).doc(user.uid), {
           'friends': <String>[],
           'follower': <String>[],
           'following': <String>[],
         });
-      });
+      await batch.commit();
 
       await user.updateDisplayName(name);
       await user.reload();

@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 class CategoryCurrent extends StatelessWidget {
   const CategoryCurrent({
     super.key,
-    required String? displayName,
-  }) : _displayName = displayName;
+    required String uid,
+  }) : _uid = uid;
 
-  final String? _displayName;
+  final String _uid;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class CategoryCurrent extends StatelessWidget {
       child: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('UserContents')
-            .where("name", isEqualTo: _displayName)
+            .where("authorUid", isEqualTo: _uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

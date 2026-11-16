@@ -38,15 +38,10 @@ class _FriendsListWidgetState extends State<FriendsListWidget>
           itemBuilder: (context, index) {
             String userName =
                 chatData.friendsUserInfoDocs[index].get('userName');
+            String friendUid = chatData.friendsUserInfoDocs[index].id;
             return GestureDetector(
               onTap: () {
-                setState(() {
-                  if (chatData.member.contains(userName)) {
-                    chatData.member.remove(userName);
-                  } else {
-                    chatData.member.add(userName);
-                  }
-                });
+                setState(() => chatData.toggleMember(friendUid, userName));
               },
               child: Column(
                 children: [
@@ -54,7 +49,7 @@ class _FriendsListWidgetState extends State<FriendsListWidget>
                       rxList: chatData.friendsUserInfoDocs,
                       index: index,
                       boxColor: Colors.transparent,
-                      borderColor: chatData.member.contains(userName)
+                      borderColor: chatData.member.contains(friendUid)
                           ? Colors.amberAccent
                           : AppColors.veryDarkGrey),
                   height10,

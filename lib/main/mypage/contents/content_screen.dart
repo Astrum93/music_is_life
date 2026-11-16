@@ -42,11 +42,11 @@ class _ContentsScreenState extends State<ContentsScreen> {
       FirebaseFirestore.instance.collection('UserInfo');
 
   // 현재 인증된 유저 이름
-  final _displayName = FirebaseAuth.instance.currentUser!.displayName;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
 
   // 현재 유저 정보를 불러오는 함수
   _getUserInfo() async {
-    var userinfo = await userInfoCollection.doc(_displayName).get();
+    var userinfo = await userInfoCollection.doc(_uid).get();
     return userinfo.data();
   }
 

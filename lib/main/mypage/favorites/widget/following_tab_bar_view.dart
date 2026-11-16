@@ -16,7 +16,7 @@ class _FollowingTabBarViewState extends State<FollowingTabBarView>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: userFriendsCollection.doc(displayName).snapshots(),
+      stream: userFriendsCollection.doc(currentUid).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(

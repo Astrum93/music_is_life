@@ -78,11 +78,11 @@ void main() {
       expect(controller.validatePasswordConfirm('secret123'), isNull);
     });
 
-    test('이름은 2자 이상이고 / 를 포함할 수 없다 (Firestore 문서 ID로 쓰이므로)', () {
+    test('이름은 공백을 빼고 2자 이상이어야 한다', () {
       final controller = JoinController(repository);
 
       expect(controller.validateName('a'), isNotNull);
-      expect(controller.validateName('a/b'), isNotNull);
+      expect(controller.validateName(' a '), isNotNull);
       expect(controller.validateName('뮤직러버'), isNull);
     });
 

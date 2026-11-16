@@ -42,6 +42,7 @@ class SearchFriendsResultScreen extends StatelessWidget {
                             index: index,
                             data:
                                 searchData.searchFriends[index].get('userName'),
+                            uid: searchData.searchFriends[index].id,
                           ),
                         );
                       },

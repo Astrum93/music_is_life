@@ -26,6 +26,7 @@ class RecommendsFriendsTabBarView extends StatelessWidget
                 rxList: searchData.recommendFriends,
                 index: index,
                 data: searchData.recommendFriends[index].get('userName'),
+                uid: searchData.recommendFriends[index].id,
               ),
             );
           },

@@ -38,7 +38,8 @@ class _EditChatImageState extends State<EditChatImage> with ChatDataProvider {
     final refImage = FirebaseStorage.instance
         .ref()
         .child('userChatImage')
-        .child('${pickedImage!.uri}_chatImage.png');
+        // 예전에는 폰의 임시 파일 경로(file:/data/...)가 그대로 파일 이름이 됐다.
+        .child('${DateTime.now().millisecondsSinceEpoch}_chatImage.png');
     // 클라우드 스토리지 버킷에 저장
     await refImage.putFile(pickedImage!);
 

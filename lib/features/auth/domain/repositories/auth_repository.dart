@@ -19,7 +19,7 @@ abstract interface class AuthRepository {
 
   /// 계정을 만들고 사용자 기본 문서(UserInfo, UserFriends)를 저장한다.
   ///
-  /// 이름이 이미 사용 중이면 `AuthFailure(code: 'name-already-in-use')`를 돌려준다.
+  /// 사용자 문서는 uid를 ID로 저장한다. 이름이 이미 사용 중이면 `AuthFailure(code: 'name-already-in-use')`를 돌려준다.
   /// 중간에 실패하면 만들어진 계정을 지워서 반쯤 가입된 상태를 남기지 않는다.
   Future<Result<AuthUser>> signUp(SignUpParams params);
 
