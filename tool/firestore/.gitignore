@@ -1,0 +1,6 @@
+node_modules/
+# 백업에는 개인정보가 들어 있으므로 절대 커밋하지 않는다.
+backups/
+# 서비스 계정 키를 실수로 이 폴더에 두더라도 커밋되지 않게 한다.
+*service-account*.json
+*firebase-adminsdk*.json
