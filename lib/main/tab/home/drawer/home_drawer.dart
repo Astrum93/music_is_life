@@ -19,7 +19,7 @@ class _HomeDrawerState extends State<HomeDrawer>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: userInfoCollection.doc(displayName).snapshots(),
+      stream: userInfoCollection.doc(currentUid).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           const Center(
@@ -137,7 +137,7 @@ class _HomeDrawerState extends State<HomeDrawer>
                         /// 게시글, Liked, Like
                         StreamBuilder(
                           stream: userContentsCollection
-                              .where("name", isEqualTo: displayName)
+                              .where("authorUid", isEqualTo: currentUid)
                               .snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
@@ -242,7 +242,7 @@ class _HomeDrawerState extends State<HomeDrawer>
                                       /// 팔로워
                                       StreamBuilder(
                                           stream: userFriendsCollection
-                                              .doc(displayName)
+                                              .doc(currentUid)
                                               .snapshots(),
                                           builder: (context, snapshot) {
                                             if (snapshot.connectionState ==

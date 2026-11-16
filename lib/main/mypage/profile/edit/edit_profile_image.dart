@@ -23,7 +23,7 @@ class _EditProfileImageState extends State<EditProfileImage> {
   final currentUser = FirebaseAuth.instance.currentUser;
 
   // 현재 인증된 유저 이름
-  final _displayName = FirebaseAuth.instance.currentUser!.displayName;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
 
   // Image Picker
   void _pickerImage() async {
@@ -46,7 +46,7 @@ class _EditProfileImageState extends State<EditProfileImage> {
     final refImage = FirebaseStorage.instance
         .ref()
         .child('userProfileImage')
-        .child('${_displayName}_profile.png');
+        .child('${_uid}_profile_${DateTime.now().millisecondsSinceEpoch}.png');
     // 클라우드 스토리지 버킷에 저장
     await refImage.putFile(pickedImage!);
 
@@ -57,7 +57,7 @@ class _EditProfileImageState extends State<EditProfileImage> {
       // Firestore의 UserInfo에 저장
       await FirebaseFirestore.instance
           .collection('UserInfo')
-          .doc(_displayName)
+          .doc(_uid)
           .update({
         'userProfileImage': myurl,
       });

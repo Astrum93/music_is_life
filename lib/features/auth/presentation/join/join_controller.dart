@@ -17,14 +17,11 @@ class JoinController extends GetxController {
   String passwordConfirm = '';
   String phoneNumber = '';
 
-  // 이름은 Firestore 문서 ID로 쓰이므로 경로 구분자(/)는 허용하지 않는다.
-  static final _invalidNameChars = RegExp(r'[/]');
   static final _phonePattern = RegExp(r'^\d{2,3}-\d{3,4}-\d{4}$');
 
   String? validateName(String? value) {
     final v = value?.trim() ?? '';
     if (v.length < 2) return '이름을 2자 이상 입력해 주세요.';
-    if (_invalidNameChars.hasMatch(v)) return '이름에 / 는 사용할 수 없습니다.';
     return null;
   }
 

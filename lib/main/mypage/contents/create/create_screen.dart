@@ -75,7 +75,7 @@ class _CreateScreenState extends State<CreateScreen>
 
   // 현재 유저 정보를 불러오는 함수
   _getUserInfo() async {
-    var userinfo = await userInfoCollection.doc(_displayName).get();
+    var userinfo = await userInfoCollection.doc(_uid).get();
     return userinfo.data();
   }
 
@@ -181,19 +181,21 @@ class _CreateScreenState extends State<CreateScreen>
     hashTags.addAll([hashtag1, hashtag2, hashtag3]);
 
     // 클라우드 스토리지 버킷에 경로 생성
+    // 제목이 같은 게시물끼리 이미지가 덮어써지지 않도록 문서 ID로 경로를 만든다.
+    final contentsDoc = userContentsCollection.doc();
     final refContentsImage = _storage
         .ref()
         .child('userContents')
-        .child(_displayName!)
-        .child(title)
-        .child('$title.png');
+        .child(_uid)
+        .child('${contentsDoc.id}.png');
     await refContentsImage.putFile(pickedImage!);
 
     // 저장한 이미지 url로 변환
     final myurl = await refContentsImage.getDownloadURL();
 
-    // Firestore의 UserContents 저장
-    await userContentsCollection.doc(title).set({
+    // Firestore의 UserContents 저장 (제목이 같아도 덮어쓰지 않도록 자동 ID 사용)
+    await contentsDoc.set({
+      'authorUid': _uid,
       'name': _displayName,
       'title': title,
       'contentsImage': myurl,

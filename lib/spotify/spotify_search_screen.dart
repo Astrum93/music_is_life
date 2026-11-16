@@ -42,7 +42,7 @@ class _SpotifySearchScreenState extends State<SpotifySearchScreen>
           trackId != null) {
         await FirebaseFirestore.instance
             .collection('UserInfo')
-            .doc(user!.displayName)
+            .doc(user!.uid)
             .collection('UserPlayList')
             .doc(trackName)
             .set({

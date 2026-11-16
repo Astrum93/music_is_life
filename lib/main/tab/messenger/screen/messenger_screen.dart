@@ -19,7 +19,7 @@ class _MessengerScreenState extends State<MessengerScreen>
     return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection('UserChats')
-          .where('member', arrayContains: user!.displayName)
+          .where('member', arrayContains: currentUid)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -58,6 +58,10 @@ class _MessengerScreenState extends State<MessengerScreen>
               var chatName = doc.get('chatName');
               var member = doc.get('member');
               var likedMember = doc.get('likedMember');
+              // 화면에는 uid 대신 이름을 보여준다.
+              final Map memberNames = doc.data()!.containsKey('memberNames')
+                  ? doc.get('memberNames')
+                  : {};
               return Column(
                 children: [
                   GestureDetector(
@@ -160,7 +164,7 @@ class _MessengerScreenState extends State<MessengerScreen>
                                     child: Text(
                                       member.isEmpty
                                           ? '채팅 멤버'
-                                          : member.join(','),
+                                          : (memberNames.isEmpty ? member : memberNames.values).join(','),
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                           color: Colors.black,
@@ -180,28 +184,24 @@ class _MessengerScreenState extends State<MessengerScreen>
                           right: 35,
                           child: IconButton(
                             onPressed: () async {
-                              if (!likedMember.contains(user!.displayName)) {
-                                await FirebaseFirestore.instance
-                                    .collection('UserChats')
-                                    .doc(chatName)
+                              if (!likedMember.contains(currentUid)) {
+                                await doc.reference
                                     .update({
                                   'likedMember': FieldValue.arrayUnion(
-                                      [user!.displayName]),
+                                      [currentUid]),
                                 });
                               }
-                              if (likedMember.contains(user!.displayName)) {
-                                await FirebaseFirestore.instance
-                                    .collection('UserChats')
-                                    .doc(chatName)
+                              if (likedMember.contains(currentUid)) {
+                                await doc.reference
                                     .update({
                                   'likedMember': FieldValue.arrayRemove(
-                                      [user!.displayName]),
+                                      [currentUid]),
                                 });
                               }
                             },
                             icon: Icon(
                               Icons.stars_rounded,
-                              color: likedMember.contains(user!.displayName)
+                              color: likedMember.contains(currentUid)
                                   ? Colors.amberAccent
                                   : Colors.grey,
                               size: 30,

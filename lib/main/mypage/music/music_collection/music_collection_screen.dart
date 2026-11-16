@@ -22,7 +22,7 @@ class _MusicCollectionScreenState extends State<MusicCollectionScreen>
   void deleteTrack(int index, String trackName) {
     FirebaseFirestore.instance
         .collection('UserInfo')
-        .doc(FirebaseAuth.instance.currentUser!.displayName)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('UserPlayList')
         .doc(trackName)
         .delete();
@@ -33,7 +33,7 @@ class _MusicCollectionScreenState extends State<MusicCollectionScreen>
       String artistsName, String trackId) async {
     await FirebaseFirestore.instance
         .collection('UserInfo')
-        .doc(FirebaseAuth.instance.currentUser!.displayName)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .update({
       'userProfileTrackImage': trackImage,
       'userProfileTrackName': trackName,
@@ -60,7 +60,7 @@ class _MusicCollectionScreenState extends State<MusicCollectionScreen>
           child: StreamBuilder(
             stream: FirebaseFirestore.instance
                 .collection('UserInfo')
-                .doc(FirebaseAuth.instance.currentUser!.displayName)
+                .doc(FirebaseAuth.instance.currentUser!.uid)
                 .collection('UserPlayList')
                 .snapshots(),
             builder: (context, snapshot) {

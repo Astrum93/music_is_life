@@ -17,13 +17,13 @@ class _UserContentsScreenState extends State<UserContentsScreen> {
       FirebaseFirestore.instance.collection('UserContents');
 
   // 현재 인증된 유저 이름
-  final _displayName = FirebaseAuth.instance.currentUser!.displayName;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: userContentsCollection
-          .where("name", isEqualTo: _displayName)
+          .where("authorUid", isEqualTo: _uid)
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

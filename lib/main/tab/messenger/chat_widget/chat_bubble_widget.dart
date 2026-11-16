@@ -6,11 +6,16 @@ import 'package:music_is_life/core/constant/constants.dart';
 
 class ChatBubbleWidget extends StatefulWidget {
   final String message;
-  final String userName;
+  /// 보낸 사람 uid (UserInfo 문서 ID, 프로필 사진 조회용)
+  final String senderUid;
+
+  /// 화면에 보여줄 보낸 사람 이름
+  final String senderName;
   final String time;
   final bool isMe;
 
-  const ChatBubbleWidget(this.message, this.isMe, this.userName, this.time,
+  const ChatBubbleWidget(
+      this.message, this.isMe, this.senderUid, this.senderName, this.time,
       {super.key});
 
   @override
@@ -23,7 +28,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection('UserInfo')
-          .doc(widget.userName)
+          .doc(widget.senderUid)
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || !snapshot.data!.exists) {
@@ -95,7 +100,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                         ),
                       ),
                       Text(
-                        widget.userName,
+                        widget.senderName,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -129,7 +134,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                         ),
                       ),
                       Text(
-                        widget.userName,
+                        widget.senderName,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],

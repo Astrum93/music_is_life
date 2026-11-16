@@ -6,12 +6,15 @@ import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_u
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
 
 class UserInfoMini extends StatefulWidget {
+  /// 프로필 주인의 uid (UserInfo·UserFriends 문서 ID)
+  final String uid;
   final String profileImage;
   final String name;
   final String userProfileInfo;
 
   const UserInfoMini({
     super.key,
+    required this.uid,
     required this.profileImage,
     required this.name,
     required this.userProfileInfo,
@@ -24,35 +27,35 @@ class UserInfoMini extends StatefulWidget {
 class _UserInfoMiniState extends State<UserInfoMini>
     with FirebaseCollectionReference, FirebaseAuthUser {
   Future<void> follow() async {
-    if (widget.name == displayName) {
+    if (widget.uid == currentUid) {
       return;
     }
     await FirebaseFirestore.instance
         .collection('UserFriends')
-        .doc(widget.name)
+        .doc(widget.uid)
         .update({
-      'follower': FieldValue.arrayUnion([displayName])
+      'follower': FieldValue.arrayUnion([currentUid])
     });
     await FirebaseFirestore.instance
         .collection('UserFriends')
-        .doc(displayName)
+        .doc(currentUid)
         .update({
-      'following': FieldValue.arrayUnion([widget.name])
+      'following': FieldValue.arrayUnion([widget.uid])
     });
   }
 
   Future<void> unFollow() async {
     await FirebaseFirestore.instance
         .collection('UserFriends')
-        .doc(widget.name)
+        .doc(widget.uid)
         .update({
-      'follower': FieldValue.arrayRemove([displayName])
+      'follower': FieldValue.arrayRemove([currentUid])
     });
     await FirebaseFirestore.instance
         .collection('UserFriends')
-        .doc(displayName)
+        .doc(currentUid)
         .update({
-      'following': FieldValue.arrayRemove([widget.name])
+      'following': FieldValue.arrayRemove([widget.uid])
     });
   }
 
@@ -105,7 +108,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                       StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('UserFriends')
-                            .doc(widget.name)
+                            .doc(widget.uid)
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
@@ -145,7 +148,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                                   height10,
                                   StreamBuilder(
                                     stream: userContentsCollection
-                                        .where("name", isEqualTo: widget.name)
+                                        .where("authorUid", isEqualTo: widget.uid)
                                         .snapshots(),
                                     builder: (context, snapshot) {
                                       if (snapshot.connectionState ==
@@ -217,7 +220,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                               StreamBuilder(
                                 stream: FirebaseFirestore.instance
                                     .collection('UserFriends')
-                                    .doc(displayName)
+                                    .doc(currentUid)
                                     .snapshots(),
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
@@ -269,7 +272,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                                         child: IconButton(
                                           onPressed: () async {
                                             if (following
-                                                .contains(widget.name)) {
+                                                .contains(widget.uid)) {
                                               return await unFollow();
                                             } else {
                                               await follow();
@@ -278,7 +281,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                                           icon: Icon(
                                             Icons.local_fire_department,
                                             color:
-                                                following.contains(widget.name)
+                                                following.contains(widget.uid)
                                                     ? Colors.red
                                                     : Colors.grey,
                                           ),
@@ -286,7 +289,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                                       ),
                                       height10,
                                       Text(
-                                        following.contains(widget.name)
+                                        following.contains(widget.uid)
                                             ? '팔로잉'
                                             : '팔로우',
                                         style:

@@ -12,11 +12,16 @@ class RequestFriendDialog extends StatefulWidget {
     required this.rxList,
     required this.index,
     required this.data,
+    required this.uid,
   });
 
   final RxList rxList;
   final int index;
+  /// 화면에 보여줄 이름
   final String data;
+
+  /// 친구로 추가할 사용자의 uid
+  final String uid;
 
   @override
   State<RequestFriendDialog> createState() => _RequestFriendDialogState();
@@ -25,12 +30,12 @@ class RequestFriendDialog extends StatefulWidget {
 class _RequestFriendDialogState extends State<RequestFriendDialog> {
   /// 친구 추가
   void addFriends() async {
-    final String user = widget.data;
+    final String user = widget.uid;
 
     try {
       final friendSnapshot = await FirebaseFirestore.instance
           .collection('UserFriends')
-          .doc(FirebaseAuth.instance.currentUser!.displayName)
+          .doc(FirebaseAuth.instance.currentUser!.uid)
           .get();
 
       /// UserFriends 컬렉션 유무 확인
@@ -70,12 +75,12 @@ class _RequestFriendDialogState extends State<RequestFriendDialog> {
         /// 2. friends 필드가 null이 아니거나 현재 선택한 유저가 포함되어 있지 않다면
         if (existingFriends != null &&
             !existingFriends.contains(user) &&
-            user != FirebaseAuth.instance.currentUser!.displayName) {
+            user != FirebaseAuth.instance.currentUser!.uid) {
           existingFriends.add(user);
           await FirebaseFirestore.instance
               .collection('UserFriends')
-              .doc(FirebaseAuth.instance.currentUser!.displayName)
-              .set({'friends': existingFriends});
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .update({'friends': FieldValue.arrayUnion([user])});
           if (mounted) {
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -103,7 +108,7 @@ class _RequestFriendDialogState extends State<RequestFriendDialog> {
         }
 
         /// 3. 자기 자신을 친구 추가 하는 경우
-        if (user == FirebaseAuth.instance.currentUser!.displayName && mounted) {
+        if (user == FirebaseAuth.instance.currentUser!.uid && mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

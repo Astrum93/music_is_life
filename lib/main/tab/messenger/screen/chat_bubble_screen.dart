@@ -21,18 +21,20 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
 
   /// FireStore에 저장하는 함수
-  Future<void> saveFireStore(chatName) async {
+  Future<void> saveFireStore(String chatId) async {
     DateTime now = DateTime.now();
     DateTime hourTimestamp = DateTime(
         now.year, now.month, now.day, now.hour, now.minute, now.microsecond);
 
     await _fireStore
         .collection('UserChats')
-        .doc(chatName)
+        .doc(chatId)
         .collection('messages')
         .doc('$hourTimestamp')
         .set({
-      'sender': user!.displayName,
+      'sender': currentUid,
+      // 보낸 사람 이름은 화면 표시용으로 함께 저장한다.
+      'senderName': displayName,
       'text': _userMessage,
       'timestamp': Timestamp.fromDate(now),
     });
@@ -49,6 +51,8 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
   @override
   Widget build(BuildContext context) {
     var chatName = widget.doc.get('chatName');
+    // 채팅방 문서 ID (예전 방은 방 이름, 새 방은 자동 ID)
+    final chatId = widget.doc.id;
 
     return SafeArea(
       child: Scaffold(
@@ -68,7 +72,7 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                 child: StreamBuilder(
                   stream: _fireStore
                       .collection('UserChats')
-                      .doc(chatName)
+                      .doc(chatId)
                       .collection('messages')
                       .orderBy('timestamp', descending: true)
                       .snapshots(),
@@ -112,8 +116,11 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                           children: [
                             ChatBubbleWidget(
                               message['text'],
-                              message['sender'].toString() == user!.displayName,
+                              message['sender'].toString() == currentUid,
                               message['sender'],
+                              (message.data() as Map<String, dynamic>).containsKey('senderName')
+                                  ? message['senderName']
+                                  : message['sender'],
                               formattedDateTime,
                             ),
                             height10,
@@ -161,7 +168,7 @@ class _ChatBubbleScreenState extends State<ChatBubbleScreen>
                     onPressed: _userMessage.trim().isEmpty
                         ? null
                         : () async {
-                            await saveFireStore(chatName);
+                            await saveFireStore(chatId);
                           },
                     icon: const Icon(
                       Icons.send,

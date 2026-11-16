@@ -155,7 +155,7 @@ class _ChatWidgetState extends State<ChatWidget>
                       child: Text(
                         chatData.member.isEmpty
                             ? '채팅 멤버'
-                            : chatData.member.join(','),
+                            : chatData.memberNames.values.join(','),
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             color: Colors.black,
@@ -177,7 +177,7 @@ class _ChatWidgetState extends State<ChatWidget>
               onPressed: () {},
               icon: Icon(
                 Icons.stars_rounded,
-                color: chatData.likedMember.contains(user!.displayName)
+                color: chatData.likedMember.contains(currentUid)
                     ? Colors.amberAccent
                     : Colors.grey,
                 size: 30,

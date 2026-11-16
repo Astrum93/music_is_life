@@ -24,6 +24,7 @@ class _EditProfileIntroduceState extends State<EditProfileIntroduce> {
 
   // 현재 인증된 유저 이름
   final _displayName = FirebaseAuth.instance.currentUser!.displayName;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +104,7 @@ class _EditProfileIntroduceState extends State<EditProfileIntroduce> {
                     // Firestore의 UserInfo에 update
                     await FirebaseFirestore.instance
                         .collection('UserInfo')
-                        .doc(_displayName)
+                        .doc(_uid)
                         .update({'userProfileInfo': profileInfo});
 
                     if (context.mounted) {

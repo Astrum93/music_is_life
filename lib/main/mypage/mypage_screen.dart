@@ -33,18 +33,6 @@ class _MyScreenState extends State<MyScreen>
         FirebaseAuthUser,
         FirebaseCollectionReference,
         SpotifyWebApiService {
-  // 컨텐츠 담을 변수
-  List allContents = [];
-
-  // Contents 데이터 불러오는 함수
-  _getContents() async {
-    var userContents = await userContentsCollection
-        .doc(displayName)
-        .collection('Contents')
-        .get();
-    return userContents.docs;
-  }
-
   // 이미지 수정 팝업창
   void showAlertProfile(BuildContext context) {
     showDialog(
@@ -89,7 +77,6 @@ class _MyScreenState extends State<MyScreen>
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getContents();
   }
 
   @override
@@ -97,7 +84,7 @@ class _MyScreenState extends State<MyScreen>
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: StreamBuilder(
-          stream: userInfoCollection.doc(displayName).snapshots(),
+          stream: userInfoCollection.doc(currentUid).snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || snapshot.data == null) {
               return const Text(
@@ -201,7 +188,7 @@ class _MyScreenState extends State<MyScreen>
                     StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('UserFriends')
-                            .doc(displayName)
+                            .doc(currentUid)
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
