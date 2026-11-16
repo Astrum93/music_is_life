@@ -41,15 +41,13 @@ class SearchData extends GetxController {
         await FireStoreDataUtil.getContentsDoc();
 
     userInfo.value = userInfoDocs.where((doc) {
-      final String id = doc.id;
-      // Document의 id에 keyword가 포함되는지 확인
-      return id.toLowerCase().contains(keyword.toLowerCase());
+      // 문서 ID가 uid로 바뀌었으므로 이름(userName) 필드로 검색한다.
+      return _fieldContains(doc, 'userName', keyword);
     }).toList();
 
     contents.value = contentsDocs.where((doc) {
-      final String id = doc.id;
-      // Document의 id에 keyword가 포함되는지 확인
-      return id.toLowerCase().contains(keyword.toLowerCase());
+      // 새 게시물은 자동 ID라서 제목(title) 필드로 검색한다.
+      return _fieldContains(doc, 'title', keyword);
     }).toList();
   }
 
@@ -63,9 +61,14 @@ class SearchData extends GetxController {
         await FireStoreDataUtil.getUserInfoDoc();
 
     searchFriends.value = userInfoDocs.where((doc) {
-      final String id = doc.id;
-      // Document의 id에 keyword가 포함되는지 확인
-      return id.toLowerCase().contains(keyword.toLowerCase());
+      // 문서 ID가 uid로 바뀌었으므로 이름(userName) 필드로 검색한다.
+      return _fieldContains(doc, 'userName', keyword);
     }).toList();
+  }
+
+  bool _fieldContains(DocumentSnapshot doc, String field, String keyword) {
+    final data = doc.data() as Map<String, dynamic>?;
+    final value = data?[field];
+    return value is String && value.toLowerCase().contains(keyword.toLowerCase());
   }
 }
