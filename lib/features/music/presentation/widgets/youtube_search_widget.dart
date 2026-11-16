@@ -1,6 +1,8 @@
-import 'package:beautiful_soup_dart/beautiful_soup.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
+import 'package:music_is_life/features/music/presentation/music_controller.dart';
 import 'package:music_is_life/core/widgets/box/expanded_box.dart';
 import 'package:music_is_life/core/widgets/easy_text_form_field.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -15,84 +17,43 @@ class SearchYoutubeMusic extends StatefulWidget {
 class _SearchYoutubeMusicState extends State<SearchYoutubeMusic> {
   String singer = '';
   String titleOfSong = '';
-  String youtubeUrl = '';
-  String youtubeVideoId = '';
-  final String thumbnail = '';
-  late YoutubePlayerController youtubeController;
+
+  /// 검색에 성공하면 만들어지는 플레이어 컨트롤러
+  YoutubePlayerController? youtubeController;
+
+  MusicController get _music => Get.find<MusicController>();
 
   /// Form Key
   final formKey = GlobalKey<FormState>();
 
-  /// controller의 initialize 문제 해결할 스위치.
-  bool isSearch = false;
+  /// 입력한 노래 제목·가수로 유튜브 영상을 찾아 재생한다.
+  ///
+  /// 예전에는 검색 결과가 없거나 주소 형식이 다르면 영상 ID를 자르다가 앱이 멈췄다.
+  Future<void> _search() async {
+    if (!formKey.currentState!.validate()) return;
+    formKey.currentState!.save();
 
-  @override
-  void initState() {
-    isSearch = false;
-    super.initState();
-  }
-
-  /// Youtube 주소 가져 오는 크롤링 코드
-  Future getMusic(String title, String name) async {
-    final isValid = formKey.currentState!.validate();
-
-    if (isValid) {
-      formKey.currentState!.save();
-
-      titleOfSong = title;
-      singer = name;
-      var searchWord = '$titleOfSong+$singer';
-      searchWord = searchWord.replaceAll(' ', '+');
-      debugPrint(searchWord);
-
-      var url = Uri.parse(
-          'https://search.naver.com/search.naver?sm=tab_hty.top&where=video&query=youtube+$searchWord');
-      debugPrint('$url');
-      http.Response response =
-          await http.get(url, headers: {"Accept": "application/json"});
-
-      BeautifulSoup bs = BeautifulSoup(response.body);
-
-      var source = bs.body!.find('a', class_: 'info_title');
-      final String youtubeURL = source.toString();
-      debugPrint(youtubeURL);
-
-      if (youtubeURL.contains('youtube') == false) {
-        debugPrint('검색 결과가 youtube 영상이 아닙니다.');
-      }
-
-      /// 정규식 패턴
-      RegExp regExp = RegExp(r'href="([^"]+)"');
-      Match? match = regExp.firstMatch(youtubeURL);
-
-      /// Null Safety
-      if (match != null) {
-        String result = match.group(1).toString();
-        debugPrint('result는 $result 입니다.');
-        youtubeUrl = result;
-      } else {
-        debugPrint("No matches");
-      }
+    final result =
+        await _music.findYoutubeVideo(title: titleOfSong, singer: singer);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final value):
+        youtubeController?.close();
+        setState(() {
+          youtubeController = YoutubePlayerController.fromVideoId(
+            videoId: value,
+            autoPlay: true,
+          );
+        });
+      case Failed(:final failure):
+        showErrorSnackBar(context, failure.message);
     }
   }
 
-  /// youtube controller 생성
-  createYoutubeController(String youtubeUrl) {
-    var id = youtubeUrl.substring(32);
-    youtubeVideoId = id;
-    debugPrint('추출된 ID는 $youtubeVideoId 입니다.');
-
-    /// Youtube Player Controller
-    YoutubePlayerController controller = YoutubePlayerController.fromVideoId(
-      videoId: youtubeVideoId,
-      autoPlay: true,
-    );
-    youtubeController = controller;
-    setState(() {
-      isSearch = true;
-    });
-    debugPrint(youtubeVideoId);
-    debugPrint('Controller 생성 완료');
+  @override
+  void dispose() {
+    youtubeController?.close();
+    super.dispose();
   }
 
   @override
@@ -120,9 +81,9 @@ class _SearchYoutubeMusicState extends State<SearchYoutubeMusic> {
           key: formKey,
           child: Column(
             children: [
-              isSearch
+              youtubeController != null
                   ? YoutubePlayer(
-                      controller: youtubeController,
+                      controller: youtubeController!,
                     )
                   : Image.asset(
                       'assets/icon/3d_casual_life_cloud_music.png',
@@ -175,15 +136,7 @@ class _SearchYoutubeMusicState extends State<SearchYoutubeMusic> {
               const ExpandedBox(),
               FloatingActionButton(
                 backgroundColor: Colors.greenAccent,
-                onPressed: () async {
-                  /// 입력된 정보를 바탕으로 web 스크랩핑
-                  await getMusic(titleOfSong, singer);
-
-                  debugPrint('함수 실행으로 가져온 result는 $youtubeUrl 입니다.');
-
-                  /// youtube controller로 변환
-                  await createYoutubeController(youtubeUrl);
-                },
+                onPressed: _search,
                 child: const Icon(Icons.search, size: 30),
               ),
             ],

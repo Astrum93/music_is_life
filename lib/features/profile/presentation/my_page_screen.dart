@@ -6,20 +6,20 @@ import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_u
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
 import 'package:music_is_life/features/friends/presentation/add_friends/add_friends_fragment.dart';
 import 'package:music_is_life/features/friends/presentation/favorites/favorites_fragment.dart';
-import 'package:music_is_life/main/mypage/music/music_collection/music_collection_screen.dart';
+import 'package:music_is_life/features/music/presentation/screens/playlist_screen.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
 import 'package:music_is_life/features/profile/presentation/profile_controller.dart';
 import 'package:music_is_life/features/profile/presentation/widgets/edit_introduction_dialog.dart';
 import 'package:music_is_life/features/profile/presentation/widgets/edit_profile_image_dialog.dart';
 import 'package:music_is_life/features/messenger/presentation/messenger_fragment.dart';
-import 'package:music_is_life/spotify/service/spotify_web_api_service.dart';
-import 'package:spotify_sdk/models/connection_status.dart';
-import 'package:spotify_sdk/spotify_sdk.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
+import 'package:music_is_life/features/music/presentation/music_controller.dart';
 
 import 'package:music_is_life/features/contents/presentation/screens/create_content_screen.dart';
 import 'package:music_is_life/features/contents/presentation/widgets/my_contents_grid.dart';
-import 'package:music_is_life/main/mypage/music/music_search_screen.dart';
+import 'package:music_is_life/features/music/presentation/screens/youtube_search_screen.dart';
 
 class MyScreen extends StatefulWidget {
   const MyScreen({super.key});
@@ -32,9 +32,16 @@ class _MyScreenState extends State<MyScreen>
     with
         TickerProviderStateMixin,
         FirebaseAuthUser,
-        FirebaseCollectionReference,
-        SpotifyWebApiService {
+        FirebaseCollectionReference {
   ProfileController get _controller => Get.find<ProfileController>();
+
+  /// 대표곡을 Spotify 앱으로 재생한다. (예전에는 버튼을 눌러도 토큰만 받고 재생하지 않았다)
+  Future<void> _playTrack(String trackId) async {
+    final result = await Get.find<MusicController>().play(trackId);
+    if (result case Failed(:final failure) when mounted) {
+      showErrorSnackBar(context, failure.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,21 +142,24 @@ class _MyScreenState extends State<MyScreen>
                 const SizedBox(height: 10),
 
                 Obx(() {
-                      final followerCount =
-                          Get.find<FriendsController>().relations.value.followers.length;
+                  final followerCount = Get.find<FriendsController>()
+                      .relations
+                      .value
+                      .followers
+                      .length;
 
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.local_fire_department,
-                            color: Colors.red,
-                          ),
-                          width10,
-                          Text('$followerCount'),
-                        ],
-                      );
-                    }),
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.local_fire_department,
+                        color: Colors.red,
+                      ),
+                      width10,
+                      Text('$followerCount'),
+                    ],
+                  );
+                }),
                 const SizedBox(height: 10),
 
                 // 프로필 상호작용 버튼들
@@ -278,80 +288,69 @@ class _MyScreenState extends State<MyScreen>
                           style: TextStyle(color: Colors.grey),
                         )
                       else
-                        StreamBuilder<ConnectionStatus>(
-                            stream: SpotifySdk.subscribeConnectionStatus(),
-                            builder: (context, snapshot) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.2),
-                                      blurRadius: 7,
-                                    )
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                        Builder(builder: (context) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  blurRadius: 7,
+                                )
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  /// 앨범 사진
+                                  CircleAvatar(
+                                    radius: 40,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: Image.network(track.imageUrl),
+                                    ),
+                                  ),
+
+                                  /// 음악 제목, 가수 이름
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      /// 앨범 사진
-                                      CircleAvatar(
-                                        radius: 40,
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(50),
-                                          child: Image.network(track.imageUrl),
+                                      Text(
+                                        track.name,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
                                         ),
                                       ),
-
-                                      /// 음악 제목, 가수 이름
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            track.name,
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          Text(
-                                            track.artistsName,
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          getAccessToken();
-
-                                          //await SpotifyWebApiService
-                                          //    .remoteService(context);
-                                          //await getAccessToken();
-                                          // connectToSpotifyRemote();
-                                        },
-                                        icon: const Icon(
-                                          Icons.play_circle_outline_rounded,
-                                          color: Colors.grey,
-                                          size: 45,
+                                      Text(
+                                        track.artistsName,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey.shade600,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              );
-                            }),
+                                  IconButton(
+                                    onPressed: () => _playTrack(track.id),
+                                    icon: const Icon(
+                                      Icons.play_circle_outline_rounded,
+                                      color: Colors.grey,
+                                      size: 45,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
                     ],
                   ),
                 ),
@@ -366,7 +365,7 @@ class _MyScreenState extends State<MyScreen>
                     children: [
                       // 게시물 생성 버튼 ( Music Search )
                       MiniButton(
-                        builder: (context) => const MusicSearchScreen(),
+                        builder: (context) => const YoutubeSearchScreen(),
                         text: 'Music Search',
                         icon: Icons.music_note_rounded,
                       ),

@@ -5,7 +5,7 @@ import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection
 import 'package:music_is_life/main/tab/home/data/home_data.dart';
 import 'package:music_is_life/main/tab/home/drawer/home_drawer.dart';
 import 'package:music_is_life/features/contents/presentation/widgets/hot_contents.dart';
-import 'package:music_is_life/main/tab/home/screen/widget/search_youtube_music.dart';
+import 'package:music_is_life/features/music/presentation/widgets/youtube_search_widget.dart';
 
 import '../../../../data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/core/router/app_routes.dart';

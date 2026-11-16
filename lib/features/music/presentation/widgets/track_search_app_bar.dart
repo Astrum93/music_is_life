@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:music_is_life/spotify/data/spotify_search_data.dart';
+import 'package:get/get.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
+import 'package:music_is_life/features/music/presentation/music_controller.dart';
 
-class SpotifySearchAppBar extends StatelessWidget
-    with SpotifySearchDataProvider
-    implements PreferredSizeWidget {
+/// Spotify 곡 검색창 (뒤로가기 + 검색어 입력)
+class TrackSearchAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TextEditingController controller;
 
-  SpotifySearchAppBar({required this.controller, super.key});
+  const TrackSearchAppBar({required this.controller, super.key});
+
+  MusicController get _music => Get.find<MusicController>();
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +23,8 @@ class SpotifySearchAppBar extends StatelessWidget
             children: [
               GestureDetector(
                 onTap: () {
+                  _music.clearSearch();
                   Navigator.of(context).pop();
-                  spotifySearchData.searchResult.clear();
                 },
                 child: const Icon(
                   Icons.arrow_back_ios,
@@ -47,9 +51,11 @@ class SpotifySearchAppBar extends StatelessWidget
                     ),
                     contentPadding: EdgeInsets.all(10),
                   ),
-                  onFieldSubmitted: (value) {
-                    spotifySearchData.searchResult.clear();
-                    spotifySearchData.searchMusic(value);
+                  onFieldSubmitted: (value) async {
+                    final result = await _music.searchTracks(value);
+                    if (result case Failed(:final failure) when context.mounted) {
+                      showErrorSnackBar(context, failure.message);
+                    }
                   },
                 ),
               ),

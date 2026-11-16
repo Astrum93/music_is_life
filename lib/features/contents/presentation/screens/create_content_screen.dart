@@ -8,8 +8,8 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:music_is_life/core/widgets/button/check_button.dart';
 import 'package:music_is_life/core/widgets/short_line.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/main/mypage/contents/create/spotify_search_screen_for_create.dart';
-import 'package:music_is_life/spotify/data/spotify_search_data.dart';
+import 'package:music_is_life/features/music/presentation/music_controller.dart';
+import 'package:music_is_life/features/music/presentation/screens/content_track_search_screen.dart';
 
 import 'package:music_is_life/core/widgets/box/hash_tag_input_box.dart';
 import 'package:music_is_life/core/result/result.dart';
@@ -25,8 +25,7 @@ class CreateContentScreen extends StatefulWidget {
   State<CreateContentScreen> createState() => _CreateContentScreenState();
 }
 
-class _CreateContentScreenState extends State<CreateContentScreen>
-    with SpotifySearchDataProvider {
+class _CreateContentScreenState extends State<CreateContentScreen> {
   ContentsController get _controller => Get.find<ContentsController>();
 
   // Image 저장 변수
@@ -47,18 +46,13 @@ class _CreateContentScreenState extends State<CreateContentScreen>
   final TextEditingController _hashtagController3 = TextEditingController();
 
   // User 정보 불러오기
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    Get.put(SpotifySearchData());
-  }
+  MusicController get _music => Get.find<MusicController>();
 
   @override
-  void dispose() {
-    /// *** delete는 Generic Type으로 관리 ***
-    Get.delete<SpotifySearchData>();
-    super.dispose();
+  void initState() {
+    super.initState();
+    // 이전에 작성하다 만 게시물의 곡이 남아 있지 않도록 비운다.
+    _music.clearPickedTrack();
   }
 
   // 컨텐츠 이미지
@@ -139,11 +133,11 @@ class _CreateContentScreenState extends State<CreateContentScreen>
     }
 
     // 예전에는 곡을 고르지 않으면 selectTrack[0]에서 앱이 멈췄다.
-    if (spotifySearchData.selectTrack.isEmpty) {
+    final track = _music.pickedTrack.value;
+    if (track == null) {
       showErrorSnackBar(context, '게시물에 붙일 곡을 선택해 주세요.');
       return;
     }
-    final track = spotifySearchData.selectTrack[0];
 
     final result = await _controller.post(
       NewContent(
@@ -156,9 +150,9 @@ class _CreateContentScreenState extends State<CreateContentScreen>
           _hashtagController3.text,
         ],
         track: ContentTrack(
-          name: track['trackName'].toString(),
-          artistsName: track['artistsName'].toString(),
-          imageUrl: track['trackImage'].toString(),
+          name: track.name,
+          artistsName: track.artistsName,
+          imageUrl: track.imageUrl,
         ),
       ),
     );
@@ -176,7 +170,7 @@ class _CreateContentScreenState extends State<CreateContentScreen>
     _hashtagController1.clear();
     _hashtagController2.clear();
     _hashtagController3.clear();
-    spotifySearchData.selectTrack.clear();
+    _music.clearPickedTrack();
     setState(() {
       pickedImage = null;
     });
@@ -418,13 +412,13 @@ class _CreateContentScreenState extends State<CreateContentScreen>
                                   const ShortLine(color: Colors.amber),
                                   const Height(40),
                                   Obx(
-                                    () => spotifySearchData.selectTrack.isEmpty
+                                    () => _music.pickedTrack.value == null
                                         ? GestureDetector(
                                             onTap: () {
                                               Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                       builder: (context) =>
-                                                          const SpotifySearchScreenForCreate()));
+                                                          const ContentTrackSearchScreen()));
                                             },
                                             child: DottedBorder(
                                               borderType: BorderType.RRect,
@@ -443,16 +437,14 @@ class _CreateContentScreenState extends State<CreateContentScreen>
                                                   Radius.circular(30),
                                                 ),
                                                 child: Image.network(
-                                                  spotifySearchData
-                                                          .selectTrack[0]
-                                                      ['trackImage'],
+                                                  _music.pickedTrack.value!
+                                                      .imageUrl,
                                                   scale: 3.5,
                                                 ),
                                               ),
                                               height10,
                                               Text(
-                                                spotifySearchData.selectTrack[0]
-                                                    ['trackName'],
+                                                _music.pickedTrack.value!.name,
                                                 style: const TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold,
@@ -462,8 +454,8 @@ class _CreateContentScreenState extends State<CreateContentScreen>
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                               Text(
-                                                spotifySearchData.selectTrack[0]
-                                                    ['artistsName'],
+                                                _music.pickedTrack.value!
+                                                    .artistsName,
                                                 style: const TextStyle(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
