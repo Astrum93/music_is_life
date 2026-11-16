@@ -24,7 +24,7 @@ class SearchInputWidget extends StatelessWidget {
         decoration: const InputDecoration(
           focusedBorder:
               UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
-          hintText: '사용자 ID를 입력 해주세요.',
+          hintText: '사용자 이름을 입력 해주세요.',
           hintStyle: TextStyle(
             color: Colors.grey,
             fontSize: 12,

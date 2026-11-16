@@ -26,6 +26,47 @@ class FirebaseProfileRepository implements ProfileRepository {
       );
 
   @override
+  Future<Result<List<UserProfile>>> fetchProfiles(List<String> uids) async {
+    if (uids.isEmpty) return const Success([]);
+    try {
+      final byUid = <String, UserProfile>{};
+      // whereIn은 한 번에 30개까지만 받으므로 나눠서 조회한다.
+      for (var i = 0; i < uids.length; i += 30) {
+        final chunk = uids.sublist(i, (i + 30).clamp(0, uids.length));
+        final snap = await _firestore
+            .collection('UserInfo')
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+        for (final d in snap.docs) {
+          byUid[d.id] = userProfileFromFirestore(d.id, d.data());
+        }
+      }
+      return Success([
+        for (final uid in uids)
+          if (byUid[uid] case final profile?) profile,
+      ]);
+    } on FirebaseException catch (e) {
+      return Failed(ServerFailure('사용자 정보를 불러오지 못했습니다.', code: e.code));
+    } catch (e) {
+      return Failed(UnknownFailure('사용자 정보를 불러오지 못했습니다.', e));
+    }
+  }
+
+  @override
+  Future<Result<List<UserProfile>>> fetchAllProfiles() async {
+    try {
+      final snap = await _firestore.collection('UserInfo').get();
+      return Success([
+        for (final d in snap.docs) userProfileFromFirestore(d.id, d.data()),
+      ]);
+    } on FirebaseException catch (e) {
+      return Failed(ServerFailure('사용자 목록을 불러오지 못했습니다.', code: e.code));
+    } catch (e) {
+      return Failed(UnknownFailure('사용자 목록을 불러오지 못했습니다.', e));
+    }
+  }
+
+  @override
   Future<Result<void>> updateProfileImage(String uid, File image) =>
       _uploadAndSet(
         uid: uid,

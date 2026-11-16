@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/main/mypage/add_friends/widget/tabbar/add_friends_tab_bar.dart';
-import 'package:music_is_life/main/mypage/add_friends/widget/tabbar/add_friends_tab_bar_view.dart';
-import 'package:music_is_life/main/tab/search/data/search_data.dart';
+import 'package:music_is_life/features/friends/presentation/add_friends/widget/tabbar/add_friends_tab_bar.dart';
+import 'package:music_is_life/features/friends/presentation/add_friends/widget/tabbar/add_friends_tab_bar_view.dart';
+import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 
+/// 친구 찾기 (추천 / 검색)
 class AddFriendsFragment extends StatefulWidget {
   const AddFriendsFragment({super.key});
 
@@ -13,24 +14,19 @@ class AddFriendsFragment extends StatefulWidget {
 }
 
 class _AddFriendsFragmentState extends State<AddFriendsFragment>
-    with SearchDataProvider, SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late final TabController tabController;
 
   @override
   void initState() {
-    Get.put(SearchData());
-
-    /// 추천 친구
-    searchData.userInfoCreate();
-
-    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     super.initState();
+    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    // 추천 친구
+    Get.find<FriendsController>().loadRecommendations();
   }
 
   @override
   void dispose() {
-    /// *** delete는 Generic Type으로 관리 ***
-    Get.delete<SearchData>();
     tabController.dispose();
     super.dispose();
   }
@@ -54,12 +50,7 @@ class _AddFriendsFragmentState extends State<AddFriendsFragment>
             const Height(60),
             AddFriendsTabBar(tabController: tabController),
             Expanded(
-              child: GetBuilder<SearchData>(
-                builder: (searchData) {
-                  return AddFriendsTabBarView(
-                      tabController: tabController, searchData: searchData);
-                },
-              ),
+              child: AddFriendsTabBarView(tabController: tabController),
             ),
           ],
         ),

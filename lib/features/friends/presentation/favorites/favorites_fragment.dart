@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:music_is_life/main/mypage/favorites/widget/favorites_tab_bar.dart';
-import 'package:music_is_life/main/mypage/favorites/widget/favorites_tab_bar_view.dart';
+import 'package:music_is_life/features/friends/presentation/favorites/widget/favorites_tab_bar.dart';
+import 'package:music_is_life/features/friends/presentation/favorites/widget/favorites_tab_bar_view.dart';
 
 class FavoritesFragment extends StatefulWidget {
   const FavoritesFragment({super.key});

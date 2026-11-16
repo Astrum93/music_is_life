@@ -121,6 +121,14 @@ describe('UserFriends', () => {
     await assertSucceeds(updateDoc(doc(db, 'UserFriends', BOB), { following: arrayUnion(ALICE) }));
   });
 
+  test('팔로우를 batch로 한 번에 처리할 수 있다 (앱의 실제 방식)', async () => {
+    const db = as(BOB);
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'UserFriends', ALICE), { follower: arrayUnion(BOB) });
+    batch.update(doc(db, 'UserFriends', BOB), { following: arrayUnion(ALICE) });
+    await assertSucceeds(batch.commit());
+  });
+
   test('언팔로우: 상대 follower에서 내 uid 제거', async () => {
     await env.withSecurityRulesDisabled((ctx) =>
       updateDoc(doc(ctx.firestore(), 'UserFriends', ALICE), { follower: [BOB] }));

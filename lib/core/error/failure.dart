@@ -32,6 +32,13 @@ final class NetworkFailure extends Failure {
   const NetworkFailure([super.message = '네트워크 연결을 확인해 주세요.']);
 }
 
+/// 규칙상 할 수 없는 요청 (예: 나 자신을 친구로 추가, 이미 친구인 사용자 추가)
+final class InvalidRequestFailure extends Failure {
+  const InvalidRequestFailure(super.message, {this.code});
+
+  final String? code;
+}
+
 /// 요청한 데이터가 없을 때
 final class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message = '데이터를 찾을 수 없습니다.']);
