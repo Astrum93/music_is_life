@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_is_life/common/constant/app_colors.dart';
-import 'package:music_is_life/common/widget/button/check_button.dart';
-import 'package:music_is_life/common/widget/scaffold/custom_snackbar.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/constant/app_colors.dart';
+import 'package:music_is_life/core/widgets/button/check_button.dart';
+import 'package:music_is_life/core/widgets/scaffold/custom_snackbar.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/main/tab/messenger/chat_widget/chat_widget.dart';
 import 'package:music_is_life/main/tab/messenger/chat_widget/friends_list_widget.dart';

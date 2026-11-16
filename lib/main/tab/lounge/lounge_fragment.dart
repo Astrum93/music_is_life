@@ -1,7 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/main/tab/lounge/slider/lounge_slider_indicator.dart';
 import 'package:music_is_life/main/tab/lounge/slider/slider_items.dart';
 

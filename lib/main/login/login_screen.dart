@@ -1,13 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:music_is_life/common/constant/app_colors.dart';
-import 'package:music_is_life/common/widget/button/check_button.dart';
+import 'package:music_is_life/core/constant/app_colors.dart';
+import 'package:music_is_life/core/widgets/button/check_button.dart';
 import 'package:music_is_life/main/tab/home/data/home_data.dart';
 import 'package:music_is_life/main/tab/home/home_fragment.dart';
 
-import '../../common/constant/constants.dart';
-import '../../common/widget/easy_text_form_field.dart';
+import 'package:music_is_life/core/constant/constants.dart';
+import 'package:music_is_life/core/widgets/easy_text_form_field.dart';
 import '../../data/memory/user_join_data.dart';
 
 class LogInScreen extends StatefulWidget {

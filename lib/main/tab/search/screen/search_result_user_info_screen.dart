@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 
 import '../data/search_data.dart';
 

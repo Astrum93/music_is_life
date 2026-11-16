@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_is_life/common/constant/app_colors.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/constant/app_colors.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/main/tab/messenger/chat_widget/edit/edit_chat_image.dart';
 import 'package:music_is_life/main/tab/messenger/chat_widget/edit/edit_chat_name.dart';
