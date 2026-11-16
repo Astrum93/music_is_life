@@ -94,7 +94,7 @@ class _UserContentsScreenState extends State<UserContentsScreen> {
                       height: 250,
                       decoration: BoxDecoration(
                         border: Border.all(
-                            color: Colors.grey.withOpacity(0.05), width: 1),
+                            color: Colors.grey.withValues(alpha: 0.05), width: 1),
                         image: DecorationImage(
                           fit: BoxFit.cover,
                           image: NetworkImage(contentsImage),

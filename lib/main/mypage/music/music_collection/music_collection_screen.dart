@@ -284,7 +284,7 @@ class _MusicCollectionScreenState extends State<MusicCollectionScreen>
                 builder: (context) => const SpotifySearchScreen()));
           },
           backgroundColor: AppColors.veryDarkGrey,
-          splashColor: Colors.amberAccent.withOpacity(0.5),
+          splashColor: Colors.amberAccent.withValues(alpha: 0.5),
           child: const Icon(
             Icons.search,
             color: Colors.white,

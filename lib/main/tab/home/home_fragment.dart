@@ -42,7 +42,7 @@ class _HomeFragmentState extends State<HomeFragment> with FirebaseAuthUser {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop) {
           showPopDialog(context);
         }

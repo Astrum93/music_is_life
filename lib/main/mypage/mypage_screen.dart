@@ -114,7 +114,6 @@ class _MyScreenState extends State<MyScreen>
             var userProfileTrackName = collectionDoc['userProfileTrackName'];
             var userProfileTrackArtistsName =
                 collectionDoc['userProfileTrackArtistsName'];
-            var userProfileTrackId = collectionDoc['userProfileTrackId'];
 
             return SingleChildScrollView(
               child: Center(
@@ -325,7 +324,7 @@ class _MyScreenState extends State<MyScreen>
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.blueGrey.shade100
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                     blurRadius: 7,
                                   )
                                 ],
@@ -366,7 +365,7 @@ class _MyScreenState extends State<MyScreen>
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.white.withOpacity(0.2),
+                                        color: Colors.white.withValues(alpha: 0.2),
                                         blurRadius: 7,
                                       )
                                     ],

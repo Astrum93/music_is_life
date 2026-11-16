@@ -17,7 +17,7 @@ class LoungeFragment extends StatefulWidget {
 
 class _LoungeFragmentState extends State<LoungeFragment> {
   int _current = 0;
-  final CarouselController _controller = CarouselController();
+  final CarouselSliderController _controller = CarouselSliderController();
   final _displayName = FirebaseAuth.instance.currentUser!.displayName;
 
   @override

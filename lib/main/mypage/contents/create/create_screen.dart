@@ -117,7 +117,7 @@ class _CreateScreenState extends State<CreateScreen>
         width: MediaQuery.of(context).size.width,
         height: 200,
         decoration: BoxDecoration(
-          color: Colors.blue.shade50.withOpacity(.1),
+          color: Colors.blue.shade50.withValues(alpha: .1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Image.file(
