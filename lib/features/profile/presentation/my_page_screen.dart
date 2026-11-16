@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:music_is_life/core/widgets/button/mini_button.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
-import 'package:music_is_life/main/mypage/add_friends/add_friends_fragment.dart';
-import 'package:music_is_life/main/mypage/favorites/favorites_fragment.dart';
+import 'package:music_is_life/features/friends/presentation/add_friends/add_friends_fragment.dart';
+import 'package:music_is_life/features/friends/presentation/favorites/favorites_fragment.dart';
 import 'package:music_is_life/main/mypage/music/music_collection/music_collection_screen.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
@@ -134,26 +134,9 @@ class _MyScreenState extends State<MyScreen>
                 ),
                 const SizedBox(height: 10),
 
-                StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('UserFriends')
-                        .doc(currentUid)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-
-                      final userFriendsDoc = snapshot.data!;
-
-                      var userFriendsDocData = userFriendsDoc.data();
-
-                      var follower = userFriendsDocData != null &&
-                              userFriendsDocData.containsKey('follower')
-                          ? userFriendsDocData['follower']
-                          : [];
+                Obx(() {
+                      final followerCount =
+                          Get.find<FriendsController>().relations.value.followers.length;
 
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -163,7 +146,7 @@ class _MyScreenState extends State<MyScreen>
                             color: Colors.red,
                           ),
                           width10,
-                          Text('${follower.length}'),
+                          Text('$followerCount'),
                         ],
                       );
                     }),

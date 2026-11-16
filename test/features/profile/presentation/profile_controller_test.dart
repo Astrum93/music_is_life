@@ -23,6 +23,12 @@ class _FakeProfileRepository implements ProfileRepository {
   Stream<UserProfile?> watchProfile(String uid) => profiles.stream;
 
   @override
+  Future<Result<List<UserProfile>>> fetchProfiles(List<String> uids) async => const Success([]);
+
+  @override
+  Future<Result<List<UserProfile>>> fetchAllProfiles() async => const Success([]);
+
+  @override
   Future<Result<void>> updateProfileImage(String uid, File image) => _record('profile:$uid');
 
   @override

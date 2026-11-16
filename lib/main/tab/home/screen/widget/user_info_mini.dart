@@ -1,7 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
+import 'package:get/get.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
+import 'package:music_is_life/features/friends/domain/entities/friend_relations.dart';
+import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
 
@@ -26,37 +30,13 @@ class UserInfoMini extends StatefulWidget {
 
 class _UserInfoMiniState extends State<UserInfoMini>
     with FirebaseCollectionReference, FirebaseAuthUser {
-  Future<void> follow() async {
-    if (widget.uid == currentUid) {
-      return;
-    }
-    await FirebaseFirestore.instance
-        .collection('UserFriends')
-        .doc(widget.uid)
-        .update({
-      'follower': FieldValue.arrayUnion([currentUid])
-    });
-    await FirebaseFirestore.instance
-        .collection('UserFriends')
-        .doc(currentUid)
-        .update({
-      'following': FieldValue.arrayUnion([widget.uid])
-    });
-  }
+  FriendsController get _friends => Get.find<FriendsController>();
 
-  Future<void> unFollow() async {
-    await FirebaseFirestore.instance
-        .collection('UserFriends')
-        .doc(widget.uid)
-        .update({
-      'follower': FieldValue.arrayRemove([currentUid])
-    });
-    await FirebaseFirestore.instance
-        .collection('UserFriends')
-        .doc(currentUid)
-        .update({
-      'following': FieldValue.arrayRemove([widget.uid])
-    });
+  Future<void> _toggleFollow() async {
+    final result = await _friends.toggleFollow(widget.uid);
+    if (result case Failed(:final failure) when mounted) {
+      showErrorSnackBar(context, failure.message);
+    }
   }
 
   @override
@@ -105,32 +85,15 @@ class _UserInfoMiniState extends State<UserInfoMini>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection('UserFriends')
-                            .doc(widget.uid)
-                            .snapshots(),
+                      StreamBuilder<FriendRelations>(
+                        stream: _friends.watchRelationsOf(widget.uid),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
+                          if (!snapshot.hasData) {
                             return const Center(
-                              child: CircularProgressIndicator(),
-                            );
+                                child: CircularProgressIndicator());
                           }
-
-                          final userFriendsDoc = snapshot.data!;
-
-                          var userFriendsDocData = userFriendsDoc.data();
-
-                          var following = userFriendsDocData != null &&
-                                  userFriendsDocData.containsKey('following')
-                              ? userFriendsDocData['following']
-                              : [];
-
-                          var follower = userFriendsDocData != null &&
-                                  userFriendsDocData.containsKey('follower')
-                              ? userFriendsDocData['follower']
-                              : [];
+                          final following = snapshot.data!.following;
+                          final follower = snapshot.data!.followers;
 
                           return Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +111,8 @@ class _UserInfoMiniState extends State<UserInfoMini>
                                   height10,
                                   StreamBuilder(
                                     stream: userContentsCollection
-                                        .where("authorUid", isEqualTo: widget.uid)
+                                        .where("authorUid",
+                                            isEqualTo: widget.uid)
                                         .snapshots(),
                                     builder: (context, snapshot) {
                                       if (snapshot.connectionState ==
@@ -217,88 +181,57 @@ class _UserInfoMiniState extends State<UserInfoMini>
                               const Width(30),
 
                               /// 팔로우 버튼
-                              StreamBuilder(
-                                stream: FirebaseFirestore.instance
-                                    .collection('UserFriends')
-                                    .doc(currentUid)
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
+                              Obx(() {
+                                final isFollowing = _friends.relations.value
+                                    .isFollowing(widget.uid);
 
-                                  final userFriendsDoc = snapshot.data!;
-                                  var userFriendsDocData =
-                                      userFriendsDoc.data();
-
-                                  var following = userFriendsDocData != null &&
-                                          userFriendsDocData
-                                              .containsKey('following')
-                                      ? userFriendsDocData['following']
-                                      : [];
-
-                                  return MenuAnchor(
-                                    builder: (BuildContext context,
-                                            MenuController controller,
-                                            Widget? child) =>
-                                        IconButton(
-                                      onPressed: () {
-                                        if (controller.isOpen) {
-                                          controller.close();
-                                        } else {
-                                          controller.open();
-                                        }
-                                      },
-                                      icon: const Icon(Icons.more_horiz),
+                                return MenuAnchor(
+                                  builder: (BuildContext context,
+                                          MenuController controller,
+                                          Widget? child) =>
+                                      IconButton(
+                                    onPressed: () {
+                                      if (controller.isOpen) {
+                                        controller.close();
+                                      } else {
+                                        controller.open();
+                                      }
+                                    },
+                                    icon: const Icon(Icons.more_horiz),
+                                  ),
+                                  style: const MenuStyle(
+                                    padding: WidgetStatePropertyAll<
+                                        EdgeInsetsGeometry>(
+                                      EdgeInsets.all(4),
                                     ),
-                                    style: const MenuStyle(
-                                      padding: WidgetStatePropertyAll<
-                                          EdgeInsetsGeometry>(
-                                        EdgeInsets.all(4),
-                                      ),
-                                      backgroundColor:
-                                          WidgetStatePropertyAll<Color>(
-                                              Colors.transparent),
-                                      shadowColor:
-                                          WidgetStatePropertyAll<Color>(
-                                              Colors.transparent),
-                                    ),
-                                    menuChildren: [
-                                      CircleAvatar(
-                                        backgroundColor: Colors.black,
-                                        child: IconButton(
-                                          onPressed: () async {
-                                            if (following
-                                                .contains(widget.uid)) {
-                                              return await unFollow();
-                                            } else {
-                                              await follow();
-                                            }
-                                          },
-                                          icon: Icon(
-                                            Icons.local_fire_department,
-                                            color:
-                                                following.contains(widget.uid)
-                                                    ? Colors.red
-                                                    : Colors.grey,
-                                          ),
+                                    backgroundColor:
+                                        WidgetStatePropertyAll<Color>(
+                                            Colors.transparent),
+                                    shadowColor: WidgetStatePropertyAll<Color>(
+                                        Colors.transparent),
+                                  ),
+                                  menuChildren: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.black,
+                                      child: IconButton(
+                                        onPressed: _toggleFollow,
+                                        icon: Icon(
+                                          Icons.local_fire_department,
+                                          color: isFollowing
+                                              ? Colors.red
+                                              : Colors.grey,
                                         ),
                                       ),
-                                      height10,
-                                      Text(
-                                        following.contains(widget.uid)
-                                            ? '팔로잉'
-                                            : '팔로우',
-                                        style:
-                                            const TextStyle(color: Colors.grey),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
+                                    ),
+                                    height10,
+                                    Text(
+                                      isFollowing ? '팔로잉' : '팔로우',
+                                      style:
+                                          const TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
+                                );
+                              }),
                             ],
                           );
                         },

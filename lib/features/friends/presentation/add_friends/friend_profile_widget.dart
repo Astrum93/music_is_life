@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
+/// 친구 찾기·채팅 초대 화면의 둥근 프로필 사진
 class FriendProfileWidget extends StatelessWidget {
   const FriendProfileWidget({
     super.key,
-    required this.rxList,
-    required this.index,
+    required this.imageUrl,
     required this.boxColor,
     required this.borderColor,
   });
 
-  final RxList rxList;
-  final int index;
+  final String imageUrl;
   final Color? boxColor;
   final Color borderColor;
 
@@ -34,7 +32,7 @@ class FriendProfileWidget extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(50),
             child: Image.network(
-              rxList[index].get('userProfileImage').toString(),
+              imageUrl,
               fit: BoxFit.cover,
               alignment: Alignment.center,
             ),

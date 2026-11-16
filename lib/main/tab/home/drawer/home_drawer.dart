@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
@@ -240,37 +241,9 @@ class _HomeDrawerState extends State<HomeDrawer>
                                       const SizedBox(width: 30),
 
                                       /// 팔로워
-                                      StreamBuilder(
-                                          stream: userFriendsCollection
-                                              .doc(currentUid)
-                                              .snapshots(),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.connectionState ==
-                                                ConnectionState.waiting) {
-                                              return const Center(
-                                                  child:
-                                                      CircularProgressIndicator());
-                                            }
-
-                                            if (!snapshot.hasData ||
-                                                snapshot.data == null) {
-                                              return const Text(
-                                                'No data available',
-                                                style: TextStyle(
-                                                    color: Colors.red),
-                                              );
-                                            }
-
-                                            final userFriendsDoc =
-                                                snapshot.data!;
-                                            var userFriendsDocData =
-                                                userFriendsDoc.data()
-                                                    as Map<String, dynamic>;
-
-                                            var follower = userFriendsDocData
-                                                    .containsKey('follower')
-                                                ? userFriendsDocData['follower']
-                                                : [];
+                                      Obx(() {
+                                            final followerCount = Get.find<FriendsController>()
+                                                .relations.value.followers.length;
 
                                             return Column(
                                               children: [
@@ -283,7 +256,7 @@ class _HomeDrawerState extends State<HomeDrawer>
                                                 ),
                                                 height10,
                                                 Text(
-                                                  "${follower.length}",
+                                                  "$followerCount",
                                                   style: const TextStyle(
                                                     color: Colors.grey,
                                                     fontWeight: FontWeight.bold,
