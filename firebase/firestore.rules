@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// Music is Life Firestore 보안 규칙
+//
+// 원칙
+// - 로그인한 사용자만 접근한다.
+// - 내 문서는 나만 수정한다. (문서 ID = uid)
+// - 다른 사람 문서에는 "내 uid를 배열에 넣고 빼는 것"만 허용한다. (팔로우, 좋아요)
+// - 채팅방과 메시지는 멤버만 읽고 쓴다.
+//
+// 테스트: tool/rules-test (Firebase 에뮬레이터)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // field 배열만 바뀌었고, 바뀐 내용이 "내 uid 하나를 추가하거나 제거"인지 확인한다.
+    function onlyTogglesMyUid(field) {
+      let before = resource.data.get(field, []).toSet();
+      let after = request.resource.data.get(field, []).toSet();
+      let me = [request.auth.uid].toSet();
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([field])
+        && (after.difference(before) == me && before.difference(after).size() == 0
+            || before.difference(after) == me && after.difference(before).size() == 0);
+    }
+
+    // 사용자 프로필
+    match /UserInfo/{uid} {
+      allow read: if signedIn();
+      allow create: if isMe(uid) && request.resource.data.uid == uid;
+      allow update: if isMe(uid) && request.resource.data.uid == uid;
+      allow delete: if false;
+
+      // 내 플레이리스트
+      match /UserPlayList/{trackId} {
+        allow read: if signedIn();
+        allow write: if isMe(uid);
+      }
+    }
+
+    // 친구 / 팔로우
+    match /UserFriends/{uid} {
+      allow read: if signedIn();
+      allow create: if isMe(uid);
+      // 내 문서는 내가 수정하고, 다른 사람은 나를 팔로우/언팔로우할 때 follower에 자기 uid만 넣고 뺀다.
+      allow update: if isMe(uid) || (signedIn() && onlyTogglesMyUid('follower'));
+      allow delete: if false;
+    }
+
+    // 게시물
+    match /UserContents/{contentId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
+      // 작성자는 수정하고(작성자 변경 불가), 다른 사람은 좋아요만 누른다.
+      allow update: if (isMe(resource.data.authorUid)
+                        && request.resource.data.authorUid == resource.data.authorUid)
+                    || (signedIn() && onlyTogglesMyUid('likedMember'));
+      allow delete: if isMe(resource.data.authorUid);
+    }
+
+    // 채팅방
+    match /UserChats/{chatId} {
+      function isMember(data) {
+        return signedIn() && request.auth.uid in data.member;
+      }
+
+      allow read: if isMember(resource.data);
+      allow create: if isMember(request.resource.data);
+      allow update: if isMember(resource.data) && isMember(request.resource.data);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        function isChatMember() {
+          return signedIn()
+            && request.auth.uid in get(/databases/$(database)/documents/UserChats/$(chatId)).data.member;
+        }
+
+        allow read: if isChatMember();
+        allow create: if isChatMember() && request.resource.data.sender == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+  }
+}

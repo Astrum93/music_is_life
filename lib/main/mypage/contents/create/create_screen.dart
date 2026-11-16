@@ -7,6 +7,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:music_is_life/core/utils/image_upload_metadata.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -188,7 +189,7 @@ class _CreateScreenState extends State<CreateScreen>
         .child('userContents')
         .child(_uid)
         .child('${contentsDoc.id}.png');
-    await refContentsImage.putFile(pickedImage!);
+    await refContentsImage.putFile(pickedImage!, imageUploadMetadata(pickedImage!));
 
     // 저장한 이미지 url로 변환
     final myurl = await refContentsImage.getDownloadURL();
