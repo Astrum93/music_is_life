@@ -18,7 +18,6 @@ import 'package:music_is_life/main/mypage/contents/create/spotify_search_screen_
 import 'package:music_is_life/spotify/data/spotify_search_data.dart';
 
 import 'package:music_is_life/core/widgets/box/hash_tag_input_box.dart';
-import '../../mypage_screen.dart';
 
 class CreateScreen extends StatefulWidget {
   const CreateScreen({super.key});
@@ -221,9 +220,9 @@ class _CreateScreenState extends State<CreateScreen>
     setState(() {
       pickedImage = null;
     });
+    // 마이페이지에서 열린 화면이므로 돌아간다. (예전에는 마이페이지를 새로 push해서 화면이 쌓였다)
     if (mounted) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const MyScreen()));
+      Navigator.of(context).pop();
     }
   }
 
@@ -302,11 +301,7 @@ class _CreateScreenState extends State<CreateScreen>
                                   right: 10,
                                   child: IconButton(
                                     onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const MyScreen()));
+                                      Navigator.of(context).pop();
                                     },
                                     icon: const Icon(
                                       Icons.arrow_back_rounded,

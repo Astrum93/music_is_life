@@ -99,6 +99,7 @@ dev_dependencies:
   firebase_auth_mocks: ^0.16.0
   fake_cloud_firestore: ^4.5.0
   mock_exceptions: ^0.8.2
+  firebase_storage_mocks: ^0.9.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

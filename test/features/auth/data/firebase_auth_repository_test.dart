@@ -74,8 +74,11 @@ void main() {
       expect(userInfo.data()!['uid'], uid);
       expect(userInfo.data()!['userName'], '뮤직러버');
       expect((await firestore.collection('UserInfo').doc('뮤직러버').get()).exists, isFalse);
-      expect(userInfo.data()!['userMail'], 'lover@example.com');
-      expect(userInfo.data()!['userPhoneNumber'], '010-1234-5678');
+      // 메일·전화번호는 공개 프로필이 아니라 UserPrivate에 저장한다.
+      expect(userInfo.data()!.containsKey('userMail'), isFalse);
+      expect(userInfo.data()!.containsKey('userPhoneNumber'), isFalse);
+      final private = await firestore.collection('UserPrivate').doc(uid).get();
+      expect(private.data(), {'email': 'lover@example.com', 'phoneNumber': '010-1234-5678'});
 
       final legacy = await firestore.collection('user_info').get();
       expect(legacy.docs, isEmpty);
@@ -139,12 +142,11 @@ void main() {
         params.copyWith(name: '  뮤직러버 ', email: ' lover@example.com '),
       );
 
-      final userInfo = await firestore
-          .collection('UserInfo')
-          .doc(result.valueOrNull!.uid)
-          .get();
+      final uid = result.valueOrNull!.uid;
+      final userInfo = await firestore.collection('UserInfo').doc(uid).get();
       expect(userInfo.data()!['userName'], '뮤직러버');
-      expect(userInfo.data()!['userMail'], 'lover@example.com');
+      final private = await firestore.collection('UserPrivate').doc(uid).get();
+      expect(private.data()!['email'], 'lover@example.com');
     });
   });
 

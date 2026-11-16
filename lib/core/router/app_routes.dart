@@ -7,4 +7,5 @@ abstract final class Routes {
   static const login = '/login';
   static const join = '/join';
   static const home = '/home';
+  static const myPage = '/my-page';
 }

@@ -8,7 +8,7 @@ import 'package:music_is_life/main/tab/home/screen/widget/hot_contents.dart';
 import 'package:music_is_life/main/tab/home/screen/widget/search_youtube_music.dart';
 
 import '../../../../data/memory/firebase/firebase_auth/firebase_auth_user.dart';
-import '../../../mypage/mypage_screen.dart';
+import 'package:music_is_life/core/router/app_routes.dart';
 import '../../search/screen/search_fragment.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -62,11 +62,7 @@ class _HomeScreenState extends State<HomeScreen>
               /// 개인 프로필
               GestureDetector(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: ((context) => const MyScreen()),
-                    ),
-                  );
+                  Get.toNamed(Routes.myPage);
                 },
                 child: CircleAvatar(
                   backgroundColor: Colors.transparent,

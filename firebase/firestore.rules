@@ -30,11 +30,16 @@ service cloud.firestore {
             || before.difference(after) == me && after.difference(before).size() == 0);
     }
 
-    // 사용자 프로필
+    // 공개 프로필에는 메일·전화번호를 담을 수 없다. (UserPrivate에 저장)
+    function hasNoPrivateFields() {
+      return !request.resource.data.keys().hasAny(['userMail', 'userPhoneNumber', 'email', 'phoneNumber']);
+    }
+
+    // 사용자 프로필 (로그인한 누구나 읽는 공개 정보)
     match /UserInfo/{uid} {
       allow read: if signedIn();
-      allow create: if isMe(uid) && request.resource.data.uid == uid;
-      allow update: if isMe(uid) && request.resource.data.uid == uid;
+      allow create: if isMe(uid) && request.resource.data.uid == uid && hasNoPrivateFields();
+      allow update: if isMe(uid) && request.resource.data.uid == uid && hasNoPrivateFields();
       allow delete: if false;
 
       // 내 플레이리스트
@@ -42,6 +47,12 @@ service cloud.firestore {
         allow read: if signedIn();
         allow write: if isMe(uid);
       }
+    }
+
+    // 비공개 정보 (메일, 전화번호): 본인만 읽고 쓴다.
+    match /UserPrivate/{uid} {
+      allow read, create, update: if isMe(uid);
+      allow delete: if false;
     }
 
     // 친구 / 팔로우
