@@ -45,7 +45,7 @@ class CategoryCurrent extends StatelessWidget {
                     height: 250,
                     decoration: BoxDecoration(
                       border: Border.all(
-                          color: Colors.grey.withOpacity(0.05), width: 1),
+                          color: Colors.grey.withValues(alpha: 0.05), width: 1),
                       borderRadius: const BorderRadius.all(
                         Radius.circular(18),
                       ),

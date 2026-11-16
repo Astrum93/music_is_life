@@ -29,7 +29,7 @@ class _MiniButtonState extends State<MiniButton> {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               blurRadius: 7,
             )
           ],

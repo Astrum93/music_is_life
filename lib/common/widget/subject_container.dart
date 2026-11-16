@@ -19,7 +19,7 @@ class _SubjectContainerState extends State<SubjectContainer> {
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
         ),
         child: Text(
           widget.text,

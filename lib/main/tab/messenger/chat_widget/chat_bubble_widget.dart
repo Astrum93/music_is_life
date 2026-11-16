@@ -67,7 +67,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           child: Text(
                             widget.time,
                             style: TextStyle(
-                              color: AppColors.veryDarkGrey.withOpacity(0.7),
+                              color: AppColors.veryDarkGrey.withValues(alpha: 0.7),
                             ),
                           ),
                         )
@@ -160,7 +160,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           child: Text(
                             widget.time,
                             style: TextStyle(
-                              color: AppColors.veryDarkGrey.withOpacity(0.7),
+                              color: AppColors.veryDarkGrey.withValues(alpha: 0.7),
                             ),
                           ),
                         )

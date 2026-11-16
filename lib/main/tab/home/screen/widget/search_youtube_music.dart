@@ -83,17 +83,15 @@ class _SearchYoutubeMusicState extends State<SearchYoutubeMusic> {
     debugPrint('추출된 ID는 $youtubeVideoId 입니다.');
 
     /// Youtube Player Controller
-    YoutubePlayerController controller = YoutubePlayerController(
-      initialVideoId: youtubeVideoId,
-      flags: const YoutubePlayerFlags(
-        autoPlay: true,
-      ),
+    YoutubePlayerController controller = YoutubePlayerController.fromVideoId(
+      videoId: youtubeVideoId,
+      autoPlay: true,
     );
     youtubeController = controller;
     setState(() {
       isSearch = true;
     });
-    debugPrint(youtubeController.initialVideoId);
+    debugPrint(youtubeVideoId);
     debugPrint('Controller 생성 완료');
   }
 
@@ -107,11 +105,11 @@ class _SearchYoutubeMusicState extends State<SearchYoutubeMusic> {
       height: 430,
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.05),
+        color: Colors.grey.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             blurRadius: 7,
           )
         ],
@@ -125,7 +123,6 @@ class _SearchYoutubeMusicState extends State<SearchYoutubeMusic> {
               isSearch
                   ? YoutubePlayer(
                       controller: youtubeController,
-                      showVideoProgressIndicator: true,
                     )
                   : Image.asset(
                       'assets/icon/3d_casual_life_cloud_music.png',

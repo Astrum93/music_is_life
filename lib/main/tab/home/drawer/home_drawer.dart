@@ -36,8 +36,8 @@ class _HomeDrawerState extends State<HomeDrawer>
         var name = userInfoDoc.get('userName');
         var profileImage = userInfoDoc.get('userProfileImage');
         return Drawer(
-          backgroundColor: Colors.black.withOpacity(0.9),
-          surfaceTintColor: Colors.black.withOpacity(0.9),
+          backgroundColor: Colors.black.withValues(alpha: 0.9),
+          surfaceTintColor: Colors.black.withValues(alpha: 0.9),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -94,11 +94,11 @@ class _HomeDrawerState extends State<HomeDrawer>
                             width: 140,
                             margin: const EdgeInsets.only(bottom: 10),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.7),
+                              color: Colors.black.withValues(alpha: 0.7),
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: Colors.grey.withValues(alpha: 0.2),
                                   blurRadius: 7,
                                 )
                               ],
@@ -170,11 +170,11 @@ class _HomeDrawerState extends State<HomeDrawer>
                                 height: 100,
                                 margin: const EdgeInsets.only(bottom: 10),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.7),
+                                  color: Colors.black.withValues(alpha: 0.7),
                                   borderRadius: BorderRadius.circular(10),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.2),
+                                      color: Colors.grey.withValues(alpha: 0.2),
                                       blurRadius: 7,
                                     )
                                   ],
@@ -318,7 +318,7 @@ class _HomeDrawerState extends State<HomeDrawer>
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   backgroundColor:
-                                      Colors.grey.withOpacity(0.8)),
+                                      Colors.grey.withValues(alpha: 0.8)),
                               icon: const Icon(Icons.logout_rounded),
                               label: const Text('Logout'),
                             ),
