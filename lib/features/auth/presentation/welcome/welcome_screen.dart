@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'join/join_screen.dart';
-import 'login/login_screen.dart';
+import 'package:get/get.dart';
+import 'package:music_is_life/core/router/app_routes.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -39,11 +39,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     // 로그인 버튼
                     GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const LogInScreen(),
-                          ),
-                        );
+                        Get.toNamed(Routes.login);
                       },
                       child: Container(
                         width: 150,
@@ -74,11 +70,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     // 메인 Column의 회원가입 버튼
                     GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const JoinScreen(),
-                          ),
-                        );
+                        Get.toNamed(Routes.join);
                       },
                       child: Container(
                         width: 150,
