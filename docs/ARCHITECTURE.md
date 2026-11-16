@@ -70,7 +70,8 @@ lib/
 | 1 | `feature/ca-core` | GetX 4.7, freezed, `core/` 뼈대, GetMaterialApp 전환 | ✅ |
 | 2 | `feature/ca-auth` | 로그인·회원가입 이전, 가입 컬렉션 이름 버그와 로그아웃 크래시 수정 | ✅ |
 | 3a | `feature/ca-uid-migration` | Firestore 사용자 식별자를 이름에서 uid로 전환 (데이터 이전 포함) | ✅ |
-| 3b | `feature/ca-profile`, `feature/ca-contents` | 프로필·게시물 이전 | |
+| 3b | `feature/ca-profile` | 프로필 이전, 메일·전화번호를 UserPrivate로 분리 | ✅ |
+| 3c | `feature/ca-contents` | 게시물 이전 | |
 | 4 | `feature/ca-friends`, `feature/ca-messenger` | 친구·메신저 이전 | |
 | 5 | `feature/ca-music` | Spotify(PKCE 전환)·YouTube 이전 | |
 | 6 | `feature/ca-cleanup` | 옛 폴더와 안 쓰는 패키지 제거, Repository 테스트 | |

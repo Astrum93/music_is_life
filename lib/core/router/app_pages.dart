@@ -6,6 +6,8 @@ import 'package:music_is_life/features/auth/presentation/join/join_screen.dart';
 import 'package:music_is_life/features/auth/presentation/login/login_binding.dart';
 import 'package:music_is_life/features/auth/presentation/login/login_screen.dart';
 import 'package:music_is_life/features/auth/presentation/welcome/welcome_screen.dart';
+import 'package:music_is_life/features/profile/presentation/my_page_screen.dart';
+import 'package:music_is_life/features/profile/presentation/profile_binding.dart';
 import 'package:music_is_life/main/tab/home/home_fragment.dart';
 
 /// 앱의 화면 목록.
@@ -28,6 +30,12 @@ abstract final class AppPages {
     GetPage(
       name: Routes.home,
       page: () => const HomeFragment(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: Routes.myPage,
+      page: () => const MyScreen(),
+      binding: ProfileBinding(),
       middlewares: [AuthMiddleware()],
     ),
   ];
