@@ -59,7 +59,13 @@ describe('UserInfo', () => {
     const batch = writeBatch(db);
     batch.set(doc(db, 'UserInfo', EVE), { uid: EVE, userName: 'eve' });
     batch.set(doc(db, 'UserFriends', EVE), { friends: [], follower: [], following: [] });
+    batch.set(doc(db, 'UserPrivate', EVE), { email: 'eve@example.com', phoneNumber: '010-0000-0000' });
     await assertSucceeds(batch.commit());
+  });
+
+  test('공개 프로필에 메일·전화번호를 넣을 수 없다', async () => {
+    await assertFails(setDoc(doc(as(EVE), 'UserInfo', EVE), { uid: EVE, userName: 'eve', userMail: 'eve@example.com' }));
+    await assertFails(updateDoc(doc(as(ALICE), 'UserInfo', ALICE), { userPhoneNumber: '010-1111-2222' }));
   });
 
   test('회원가입: 다른 uid로는 만들 수 없다', async () => {
@@ -90,6 +96,21 @@ describe('UserInfo', () => {
     await assertSucceeds(setDoc(doc(as(ALICE), 'UserInfo', ALICE, 'UserPlayList', 'song'), { trackName: 'song' }));
     await assertSucceeds(deleteDoc(doc(as(ALICE), 'UserInfo', ALICE, 'UserPlayList', 'song')));
     await assertFails(setDoc(doc(as(BOB), 'UserInfo', ALICE, 'UserPlayList', 'song'), { trackName: 'song' }));
+  });
+});
+
+describe('UserPrivate', () => {
+  test('내 비공개 정보는 읽고 쓸 수 있다', async () => {
+    await assertSucceeds(setDoc(doc(as(ALICE), 'UserPrivate', ALICE), { email: 'a@example.com' }));
+    await assertSucceeds(getDoc(doc(as(ALICE), 'UserPrivate', ALICE)));
+  });
+
+  test('남의 비공개 정보는 읽을 수도 쓸 수도 없다', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      setDoc(doc(ctx.firestore(), 'UserPrivate', ALICE), { email: 'a@example.com' }));
+    await assertFails(getDoc(doc(as(BOB), 'UserPrivate', ALICE)));
+    await assertFails(getDocs(collection(as(BOB), 'UserPrivate')));
+    await assertFails(setDoc(doc(as(BOB), 'UserPrivate', ALICE), { email: 'hack@example.com' }));
   });
 });
 

@@ -16,6 +16,8 @@ class FirebaseAuthRepository implements AuthRepository {
   // 사용자 문서 ID는 uid다. (2026-11 migrate-to-uid로 이름 -> uid 전환)
   static const _userInfoCollection = 'UserInfo';
   static const _userFriendsCollection = 'UserFriends';
+  // 메일·전화번호 같은 비공개 정보. 보안 규칙상 본인만 읽을 수 있다.
+  static const _userPrivateCollection = 'UserPrivate';
 
   @override
   Stream<AuthUser?> authStateChanges() =>
@@ -80,11 +82,13 @@ class FirebaseAuthRepository implements AuthRepository {
         ..set(_firestore.collection(_userInfoCollection).doc(user.uid), {
           'uid': user.uid,
           'userName': name,
-          'userMail': params.email.trim(),
-          'userPhoneNumber': params.phoneNumber.trim(),
           'userProfileImage': baseProfileImage,
           'userProfileInfo': '',
           'userProfileBgImage': baseProfileBgImage,
+        })
+        ..set(_firestore.collection(_userPrivateCollection).doc(user.uid), {
+          'email': params.email.trim(),
+          'phoneNumber': params.phoneNumber.trim(),
         })
         // 마이페이지·홈 화면이 follower/following 필드를 바로 읽으므로 빈 배열로 만들어 둔다.
         ..set(_firestore.collection(_userFriendsCollection).doc(user.uid), {
