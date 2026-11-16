@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:music_is_life/main/tab/home/home_fragment.dart';
 
-import 'data/search_data.dart';
-
-class SearchAppBar extends StatelessWidget
-    with SearchDataProvider
-    implements PreferredSizeWidget {
+class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TextEditingController controller;
 
-  SearchAppBar({required this.controller, super.key});
+  const SearchAppBar({required this.controller, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +16,8 @@ class SearchAppBar extends StatelessWidget
             children: [
               GestureDetector(
                 onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const HomeFragment()));
-                  searchData.contents.clear();
-                  searchData.userInfo.clear();
+                  // 예전에는 홈을 새로 push해서 화면이 계속 쌓였다.
+                  Navigator.of(context).maybePop();
                 },
                 child: const Icon(
                   Icons.arrow_back_ios,

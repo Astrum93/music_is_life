@@ -8,12 +8,14 @@ import 'package:music_is_life/features/auth/presentation/login/login_screen.dart
 import 'package:music_is_life/features/auth/presentation/welcome/welcome_screen.dart';
 import 'package:music_is_life/features/contents/presentation/contents_binding.dart';
 import 'package:music_is_life/features/friends/presentation/friends_binding.dart';
+import 'package:music_is_life/features/home/presentation/home_binding.dart';
+import 'package:music_is_life/features/search/presentation/search_binding.dart';
 import 'package:music_is_life/features/messenger/presentation/messenger_binding.dart';
 import 'package:music_is_life/features/messenger/presentation/screen/create_chat_screen.dart';
 import 'package:music_is_life/features/music/presentation/music_binding.dart';
 import 'package:music_is_life/features/profile/presentation/my_page_screen.dart';
 import 'package:music_is_life/features/profile/presentation/profile_binding.dart';
-import 'package:music_is_life/main/tab/home/home_fragment.dart';
+import 'package:music_is_life/features/home/presentation/home_fragment.dart';
 
 /// 앱의 화면 목록.
 ///
@@ -36,10 +38,12 @@ abstract final class AppPages {
       name: Routes.home,
       page: () => const HomeFragment(),
       bindings: [
+        HomeBinding(),
         ContentsBinding(),
         FriendsBinding(),
         MessengerBinding(),
         MusicBinding(),
+        SearchBinding(),
       ],
       middlewares: [AuthMiddleware()],
     ),

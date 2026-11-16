@@ -6,8 +6,8 @@ import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/features/friends/domain/entities/friend_relations.dart';
 import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
-import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
-import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
+import 'package:music_is_life/features/contents/domain/entities/content.dart';
+import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
 
 class UserInfoMini extends StatefulWidget {
   /// 프로필 주인의 uid (UserInfo·UserFriends 문서 ID)
@@ -28,9 +28,14 @@ class UserInfoMini extends StatefulWidget {
   State<UserInfoMini> createState() => _UserInfoMiniState();
 }
 
-class _UserInfoMiniState extends State<UserInfoMini>
-    with FirebaseCollectionReference, FirebaseAuthUser {
+class _UserInfoMiniState extends State<UserInfoMini> {
   FriendsController get _friends => Get.find<FriendsController>();
+
+  // 스트림을 build마다 새로 만들지 않도록 한 번만 만든다.
+  late final Stream<FriendRelations> _relations =
+      _friends.watchRelationsOf(widget.uid);
+  late final Stream<List<Content>> _contents =
+      Get.find<ContentsController>().watchContentsOf(widget.uid);
 
   Future<void> _toggleFollow() async {
     final result = await _friends.toggleFollow(widget.uid);
@@ -86,7 +91,7 @@ class _UserInfoMiniState extends State<UserInfoMini>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       StreamBuilder<FriendRelations>(
-                        stream: _friends.watchRelationsOf(widget.uid),
+                        stream: _relations,
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) {
                             return const Center(
@@ -109,20 +114,15 @@ class _UserInfoMiniState extends State<UserInfoMini>
                                         fontSize: 15),
                                   ),
                                   height10,
-                                  StreamBuilder(
-                                    stream: userContentsCollection
-                                        .where("authorUid",
-                                            isEqualTo: widget.uid)
-                                        .snapshots(),
+                                  StreamBuilder<List<Content>>(
+                                    stream: _contents,
                                     builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
+                                      if (!snapshot.hasData) {
                                         return const CircularProgressIndicator();
                                       }
 
-                                      /// 로그인한 유저의 게시물 문서
-                                      final collectionDocs =
-                                          snapshot.data!.docs;
+                                      /// 프로필 주인의 게시물
+                                      final collectionDocs = snapshot.data!;
                                       return Text(
                                         collectionDocs.length.toString(),
                                         style: TextStyle(
