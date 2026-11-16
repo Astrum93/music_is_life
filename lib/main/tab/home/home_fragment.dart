@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:music_is_life/common/constant/app_colors.dart';
-import 'package:music_is_life/common/fcm/fcm_manager.dart';
-import 'package:music_is_life/common/widget/button/check_button.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/constant/app_colors.dart';
+import 'package:music_is_life/core/fcm/fcm_manager.dart';
+import 'package:music_is_life/core/widgets/button/check_button.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/main/tab/home/screen/home_screen.dart';
 import 'package:music_is_life/main/tab/lounge/lounge_fragment.dart';
 import 'package:music_is_life/main/tab/messenger/messenger_fragment.dart';

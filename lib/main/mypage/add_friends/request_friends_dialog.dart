@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_is_life/common/constant/app_colors.dart';
-import 'package:music_is_life/common/widget/button/check_button.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/constant/app_colors.dart';
+import 'package:music_is_life/core/widgets/button/check_button.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 
 class RequestFriendDialog extends StatefulWidget {
   const RequestFriendDialog({

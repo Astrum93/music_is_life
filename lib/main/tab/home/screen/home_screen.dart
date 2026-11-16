@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_is_life/common/fcm/fcm_manager.dart';
+import 'package:music_is_life/core/fcm/fcm_manager.dart';
 import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
 import 'package:music_is_life/main/tab/home/data/home_data.dart';
 import 'package:music_is_life/main/tab/home/drawer/home_drawer.dart';

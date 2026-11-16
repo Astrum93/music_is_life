@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
-import 'package:music_is_life/common/widget/box/expanded_box.dart';
-import 'package:music_is_life/common/widget/box/hash_tag_box.dart';
-import 'package:music_is_life/common/widget/subject_container.dart';
+import 'package:music_is_life/core/widgets/box/expanded_box.dart';
+import 'package:music_is_life/core/widgets/box/hash_tag_box.dart';
+import 'package:music_is_life/core/widgets/subject_container.dart';
 
-import '../../../common/widget/short_line.dart';
+import 'package:music_is_life/core/widgets/short_line.dart';
 
 class ContentsScreen extends StatefulWidget {
   final String contentSubject,

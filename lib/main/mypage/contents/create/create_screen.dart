@@ -10,13 +10,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:music_is_life/common/widget/button/check_button.dart';
-import 'package:music_is_life/common/widget/short_line.dart';
-import 'package:music_is_life/common/widget/width_height_widget.dart';
+import 'package:music_is_life/core/widgets/button/check_button.dart';
+import 'package:music_is_life/core/widgets/short_line.dart';
+import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/main/mypage/contents/create/spotify_search_screen_for_create.dart';
 import 'package:music_is_life/spotify/data/spotify_search_data.dart';
 
-import '../../../../common/widget/box/hash_tag_input_box.dart';
+import 'package:music_is_life/core/widgets/box/hash_tag_input_box.dart';
 import '../../mypage_screen.dart';
 
 class CreateScreen extends StatefulWidget {
