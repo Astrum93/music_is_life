@@ -1,14 +1,14 @@
-import 'package:carousel_slider/carousel_controller.dart';
-import 'package:flutter/material.dart' hide CarouselController;
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
 import 'package:music_is_life/main/tab/lounge/slider/slider_items.dart';
 
 class LoungeSliderIndicator extends StatelessWidget {
-  final CarouselController _controller;
+  final CarouselSliderController _controller;
   final int _current;
 
   const LoungeSliderIndicator({
     super.key,
-    required CarouselController controller,
+    required CarouselSliderController controller,
     required int current,
   })  : _controller = controller,
         _current = current;

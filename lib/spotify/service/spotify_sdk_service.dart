@@ -36,7 +36,7 @@ class _SpotifySdkServiceState extends State<SpotifySdkService> {
       // Colorful log messages
       printEmojis: true,
       // Print an emoji for each log message
-      printTime: true,
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
   );
 
@@ -653,7 +653,9 @@ class _SpotifySdkServiceState extends State<SpotifySdkService> {
 
   Future<void> checkIfAppIsActive(BuildContext context) async {
     try {
-      var isActive = await SpotifySdk.isSpotifyAppActive;
+      // spotify_sdk 3.0에서 isSpotifyAppActive가 삭제되어 재생 상태로 판단한다.
+      final playerState = await SpotifySdk.getPlayerState();
+      final isActive = playerState != null && !playerState.isPaused;
       final snackBar = SnackBar(
           content: Text(isActive
               ? 'Spotify app connection is active (currently playing)'
