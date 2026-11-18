@@ -1,0 +1,14 @@
+{
+  "name": "music-is-life-firestore-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Firestore 백업, 현황 확인, 데이터 이전 스크립트 (로컬 관리자 전용)",
+  "type": "module",
+  "scripts": {
+    "backup": "node backup.mjs",
+    "inspect": "node inspect.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.10.0"
+  }
+}
