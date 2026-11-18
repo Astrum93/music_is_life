@@ -1,19 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/fcm/fcm_manager.dart';
 import 'package:music_is_life/core/widgets/button/check_button.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/main/tab/home/screen/home_screen.dart';
-import 'package:music_is_life/main/tab/lounge/lounge_fragment.dart';
+import 'package:music_is_life/features/home/presentation/screen/home_screen.dart';
+import 'package:music_is_life/features/contents/presentation/lounge/lounge_fragment.dart';
 import 'package:music_is_life/features/messenger/presentation/messenger_fragment.dart';
 
-import '../../../data/memory/firebase/firebase_auth/firebase_auth_user.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
 import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
-import 'package:music_is_life/features/auth/presentation/welcome/welcome_screen.dart';
-import '../search/screen/search_fragment.dart';
+import 'package:music_is_life/features/search/presentation/screen/search_fragment.dart';
 
 class HomeFragment extends StatefulWidget {
   const HomeFragment({super.key});
@@ -22,7 +19,7 @@ class HomeFragment extends StatefulWidget {
   State<HomeFragment> createState() => _HomeFragmentState();
 }
 
-class _HomeFragmentState extends State<HomeFragment> with FirebaseAuthUser {
+class _HomeFragmentState extends State<HomeFragment> {
   int _currentIndex = 0;
 
   /// Tab Items
@@ -33,10 +30,10 @@ class _HomeFragmentState extends State<HomeFragment> with FirebaseAuthUser {
     const MessengerFragment()
   ];
 
-  // initstate 함수
   @override
   void initState() {
     super.initState();
+    // 푸시 알림 설정은 여기서 한 번만 한다. (예전에는 홈 화면에서도 중복 호출했다)
     FcmManager.requestPermission();
     FcmManager.initialize();
   }
@@ -50,11 +47,8 @@ class _HomeFragmentState extends State<HomeFragment> with FirebaseAuthUser {
           showPopDialog(context);
         }
       },
-      child: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return Scaffold(
+      // 로그인 확인은 /home 라우트의 AuthMiddleware가 하고, 로그아웃하면 Welcome으로 이동한다.
+      child: Scaffold(
               body: SafeArea(
                 child: _tabItems.elementAt(_currentIndex),
               ),
@@ -91,11 +85,7 @@ class _HomeFragmentState extends State<HomeFragment> with FirebaseAuthUser {
                   ),
                 ],
               ),
-            );
-          }
-          return const WelcomeScreen();
-        },
-      ),
+            ),
     );
   }
 

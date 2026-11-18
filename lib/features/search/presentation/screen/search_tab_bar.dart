@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_is_life/main/tab/search/data/search_data.dart';
-import 'package:music_is_life/main/tab/search/screen/search_result_contents_screen.dart';
-import 'package:music_is_life/main/tab/search/screen/search_result_user_info_screen.dart';
+import 'package:music_is_life/features/search/presentation/search_controller.dart';
+import 'package:music_is_life/features/search/presentation/screen/search_result_contents_screen.dart';
+import 'package:music_is_life/features/search/presentation/screen/search_result_user_info_screen.dart';
 
 class SearchTabBarView extends StatelessWidget {
   const SearchTabBarView({
     super.key,
     required this.tabController,
-    required this.searchData,
   });
 
   final TabController tabController;
-  final SearchData searchData;
 
   @override
   Widget build(BuildContext context) {
+    final searchData = Get.find<AppSearchController>();
     return Obx(
       () => TabBarView(
         controller: tabController,
         children: [
-          searchData.userInfo.isEmpty
+          searchData.userResults.isEmpty
               ? Center(
                   child: Image.asset(
                     'assets/icon/just_be_happy.png',
@@ -28,8 +27,8 @@ class SearchTabBarView extends StatelessWidget {
                     scale: 3,
                   ),
                 )
-              : SearchResultUserInfo(),
-          searchData.contents.isEmpty
+              : const SearchResultUserInfo(),
+          searchData.contentResults.isEmpty
               ? Center(
                   child: Image.asset(
                     'assets/icon/just_be_happy.png',
@@ -37,7 +36,7 @@ class SearchTabBarView extends StatelessWidget {
                     scale: 3,
                   ),
                 )
-              : SearchResultContents(),
+              : const SearchResultContents(),
         ],
       ),
     );

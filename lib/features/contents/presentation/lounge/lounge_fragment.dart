@@ -1,8 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/main/tab/lounge/slider/lounge_slider_indicator.dart';
-import 'package:music_is_life/main/tab/lounge/slider/slider_items.dart';
+import 'package:music_is_life/features/contents/presentation/lounge/slider/lounge_slider_indicator.dart';
+import 'package:music_is_life/features/contents/presentation/lounge/slider/slider_items.dart';
 
 import 'category_item/category_all.dart';
 import 'category_item/category_current.dart';

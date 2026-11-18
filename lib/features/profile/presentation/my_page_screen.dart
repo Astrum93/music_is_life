@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:music_is_life/core/widgets/button/mini_button.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/data/memory/firebase/firebase_auth/firebase_auth_user.dart';
-import 'package:music_is_life/data/memory/firebase/firestore/firebase_collection_reference.dart';
 import 'package:music_is_life/features/friends/presentation/add_friends/add_friends_fragment.dart';
 import 'package:music_is_life/features/friends/presentation/favorites/favorites_fragment.dart';
 import 'package:music_is_life/features/music/presentation/screens/playlist_screen.dart';
@@ -29,10 +27,7 @@ class MyScreen extends StatefulWidget {
 }
 
 class _MyScreenState extends State<MyScreen>
-    with
-        TickerProviderStateMixin,
-        FirebaseAuthUser,
-        FirebaseCollectionReference {
+    with TickerProviderStateMixin {
   ProfileController get _controller => Get.find<ProfileController>();
 
   /// 대표곡을 Spotify 앱으로 재생한다. (예전에는 버튼을 눌러도 토큰만 받고 재생하지 않았다)

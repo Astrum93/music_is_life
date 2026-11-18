@@ -42,6 +42,10 @@ class ContentsController extends GetxController {
       ..add(_repository.watchByAuthor(uid).listen(myContents.assignAll));
   }
 
+  /// 다른 사용자가 쓴 게시물 (미니 프로필의 게시글 수)
+  Stream<List<Content>> watchContentsOf(String authorUid) =>
+      _repository.watchByAuthor(authorUid);
+
   /// 게시물 작성자의 현재 프로필 (이름·사진)
   Stream<UserProfile?> watchAuthor(String authorUid) =>
       _profileRepository.watchProfile(authorUid);

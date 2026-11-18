@@ -10,7 +10,7 @@ import 'package:music_is_life/core/result/result.dart';
 import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
-import 'package:music_is_life/main/tab/home/screen/widget/user_info_mini.dart';
+import 'package:music_is_life/features/home/presentation/screen/widget/user_info_mini.dart';
 
 class HotContents extends StatefulWidget {
   const HotContents({super.key});

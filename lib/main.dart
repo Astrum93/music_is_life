@@ -6,7 +6,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
 import 'package:music_is_life/firebase_options.dart';
 
-import 'main/naspace.dart';
+import 'package:music_is_life/app.dart';
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +19,12 @@ void main() async {
 
   // 저장된 로그인 정보가 복원될 때까지 기다린 뒤 첫 화면을 정한다.
   // (앱 시작 직후에는 currentUser가 잠깐 null일 수 있다.)
-  final user = await FirebaseAuth.instance.authStateChanges().first;
+  final user = await FirebaseAuth.instance
+      .authStateChanges()
+      .first;
 
   runApp(
-    NAspace(initialRoute: user != null ? Routes.home : Routes.welcome),
+    MusicIsLifeApp(initialRoute: user != null ? Routes.home : Routes.welcome),
   );
   FlutterNativeSplash.remove();
 }
