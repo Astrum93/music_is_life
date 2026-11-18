@@ -40,7 +40,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="com.example.naspace" android:host="callback"/>
+                <data android:scheme="com.naspace.musicislife" android:host="callback"/>
                 <!-- This must correspond to the custom scheme used for instantiatng the client... See below -->
             </intent-filter>
         </activity>

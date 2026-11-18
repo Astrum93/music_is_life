@@ -1,0 +1,13 @@
+{
+  "name": "music-is-life-rules-test",
+  "private": true,
+  "type": "module",
+  "description": "Firestore/Storage 보안 규칙 테스트 (Firebase 에뮬레이터 전용)",
+  "scripts": {
+    "test": "cd ../.. && J=\"${JAVA_HOME_21:-/Applications/Android Studio.app/Contents/jbr/Contents/Home}\" && JAVA_HOME=\"$J\" PATH=\"$J/bin:$PATH\" firebase emulators:exec --only firestore,storage --project demo-music-is-life \"node --test tool/rules-test/*.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.10.0"
+  }
+}
