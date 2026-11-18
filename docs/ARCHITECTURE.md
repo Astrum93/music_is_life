@@ -7,6 +7,8 @@ Music is Life는 기능별 폴더 + 3계층(클린 아키텍처) 구조를 따�
 
 ```
 lib/
+├── main.dart              # Firebase·.env 초기화, 로그인 상태에 따라 첫 화면 결정
+├── app.dart               # MusicIsLifeApp: 테마, InitialBinding, AppPages
 ├── core/                  # 기능에 속하지 않는 공통 코드
 │   ├── di/                # InitialBinding: Firebase 인스턴스 등 전역 의존성
 │   ├── error/             # Failure (sealed class)
@@ -16,8 +18,17 @@ lib/
 │   ├── constant/
 │   ├── extension/
 │   ├── fcm/
+│   ├── utils/             # 이미지 업로드 메타데이터 등
 │   └── widgets/           # 여러 기능에서 쓰는 공통 위젯
 └── features/
+    ├── auth/              # 로그인·회원가입·세션
+    ├── profile/           # 마이페이지·프로필 편집
+    ├── contents/          # 게시물·홈 피드·라운지
+    ├── friends/           # 친구·팔로우
+    ├── messenger/         # 채팅
+    ├── music/             # Spotify(PKCE)·마이 뮤직·유튜브
+    ├── home/              # 홈 탭 셸·드로어·미니 프로필
+    ├── search/            # 상단 검색
     └── <feature>/
         ├── domain/        # Entity, Repository 인터페이스, (필요할 때만) UseCase
         ├── data/          # Repository 구현체, DTO, Firebase/HTTP 호출
@@ -58,12 +69,13 @@ lib/
 
 ## 모델
 
-- Entity(domain)와 DTO(data)는 freezed로 만든다. DTO는 json_serializable로 Firestore 문서와 변환한다.
+- Entity(domain)는 freezed로 만든다.
+- Firestore 문서와의 변환은 data 계층의 mapper 함수(`*_mapper.dart`, `*FromFirestore`)가 한다. 기존 문서의 필드 이름(`userName`, `likedMember` 등)을 그대로 유지하고, 없는 필드는 기본값으로 채운다.
 - 코드 생성: `dart run build_runner build --delete-conflicting-outputs`
 
 ## 마이그레이션 단계
 
-기존 코드(`lib/main`, `lib/data`, `lib/spotify`)는 단계별로 `lib/features`로 옮긴다. 단계마다 `dev`에서 브랜치를 따고, 앱이 동작하는 상태로 `dev`에 머지한다.
+기존 코드(`lib/main`, `lib/data`, `lib/spotify`)를 단계별로 `lib/features`로 옮겼다. 단계마다 `dev`에서 브랜치를 따고, 앱이 동작하는 상태로 `dev`에 머지했다. (2026-11 완료)
 
 | 단계 | 브랜치 | 내용 | 상태 |
 |---|---|---|---|
@@ -74,4 +86,10 @@ lib/
 | 3c | `feature/ca-contents` | 게시물(작성·피드·좋아요·내 게시물·라운지) 이전 | ✅ |
 | 4 | `feature/ca-friends`, `feature/ca-messenger` | 친구·팔로우, 메신저 이전 | ✅ |
 | 5 | `feature/ca-music` | Spotify(PKCE 전환, CLIENT_SECRET 제거)·YouTube·마이 뮤직 이전 | ✅ |
-| 6 | `feature/ca-cleanup` | 옛 폴더와 안 쓰는 패키지 제거, Repository 테스트 | |
+| 6 | `feature/ca-cleanup` | 홈·검색 이전, `lib/main`·`lib/data` 삭제, 안 쓰는 패키지 9개 제거 | ✅ |
+
+## Firebase 운영
+
+- 보안 규칙: `firebase/firestore.rules`, `firebase/storage.rules`
+  - 수정 후 `cd tool/rules-test && npm test` (에뮬레이터 테스트) → `firebase deploy --only firestore:rules,storage`
+- 운영 데이터 백업·이전 스크립트: `tool/firestore/` (README 참고). 데이터를 바꾸는 스크립트는 기본이 dry-run이고, 실행 전에 반드시 백업한다.
