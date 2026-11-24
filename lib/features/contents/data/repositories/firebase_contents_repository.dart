@@ -1,27 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:music_is_life/core/error/failure.dart';
 import 'package:music_is_life/core/result/result.dart';
-import 'package:music_is_life/core/utils/image_upload_metadata.dart';
 import 'package:music_is_life/features/contents/data/models/content_mapper.dart';
 import 'package:music_is_life/features/contents/domain/entities/content.dart';
 import 'package:music_is_life/features/contents/domain/repositories/contents_repository.dart';
 
 class FirebaseContentsRepository implements ContentsRepository {
-  FirebaseContentsRepository(this._firestore, this._storage, {DateTime Function()? now})
+  FirebaseContentsRepository(this._firestore, {DateTime Function()? now})
       : _now = now ?? DateTime.now;
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
   final DateTime Function() _now;
 
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('UserContents');
 
   List<Content> _toContents(QuerySnapshot<Map<String, dynamic>> snap) {
-    final list = snap.docs.map((d) => contentFromFirestore(d.id, d.data())).toList()
-      // authorUid + time 정렬은 복합 인덱스가 필요하므로 클라이언트에서 정렬한다.
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final list =
+        snap.docs.map((d) => contentFromFirestore(d.id, d.data())).toList()
+          // authorUid + time 정렬은 복합 인덱스가 필요하므로 클라이언트에서 정렬한다.
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list;
   }
 
@@ -41,12 +39,10 @@ class FirebaseContentsRepository implements ContentsRepository {
     required NewContent content,
   }) async {
     try {
-      // 제목이 같아도 덮어쓰지 않도록 자동 ID를 쓰고, 이미지 경로도 문서 ID로 만든다.
-      // Storage 규칙: userContents/{내 uid}/ 아래에만 업로드 가능
+      // 제목이 같아도 덮어쓰지 않도록 자동 ID를 쓴다.
+      // 개인 사진은 올리지 않으므로 Storage 업로드 없이 문서만 저장한다.
+      // 사진 주소 필드(contentsImage)는 예전 게시물과 형식을 맞추려고 빈 문자열로 남긴다.
       final doc = _collection.doc();
-      final ref = _storage.ref('userContents/$authorUid/${doc.id}.png');
-      await ref.putFile(content.image, imageUploadMetadata(content.image));
-      final imageUrl = await ref.getDownloadURL();
 
       final created = Content(
         id: doc.id,
@@ -54,7 +50,7 @@ class FirebaseContentsRepository implements ContentsRepository {
         authorName: authorName,
         title: content.title.trim(),
         body: content.body.trim(),
-        imageUrl: imageUrl,
+        imageUrl: '',
         createdAt: _now(),
         hashTags: content.hashTags.map((t) => t.trim()).toList(),
         track: content.track,
@@ -77,8 +73,9 @@ class FirebaseContentsRepository implements ContentsRepository {
     try {
       // 보안 규칙: 다른 사람 게시물은 likedMember에 내 uid만 넣고 뺄 수 있다.
       await _collection.doc(contentId).update({
-        ContentFields.likedBy:
-            liked ? FieldValue.arrayUnion([uid]) : FieldValue.arrayRemove([uid]),
+        ContentFields.likedBy: liked
+            ? FieldValue.arrayUnion([uid])
+            : FieldValue.arrayRemove([uid]),
       });
       return const Success(null);
     } on FirebaseException catch (e) {

@@ -1,23 +1,32 @@
-import 'dart:io';
-
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:music_is_life/core/widgets/button/check_button.dart';
-import 'package:music_is_life/core/widgets/short_line.dart';
-import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/features/music/presentation/music_controller.dart';
-import 'package:music_is_life/features/music/presentation/screens/content_track_search_screen.dart';
-
-import 'package:music_is_life/core/widgets/box/hash_tag_input_box.dart';
 import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/theme/app_theme.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
+import 'package:music_is_life/core/widgets/components/components.dart';
 import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/contents/domain/entities/content.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
-import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
+import 'package:music_is_life/features/music/domain/entities/track.dart';
+import 'package:music_is_life/features/music/presentation/music_controller.dart';
+import 'package:music_is_life/features/music/presentation/screens/content_track_search_screen.dart';
 
+/// 해시태그 입력을 나눈다: 띄어쓰기·쉼표로 구분, # 제거, 중복 제거, 최대 3개
+List<String> parseHashTags(String input) {
+  final tags = <String>[];
+  for (final raw in input.split(RegExp(r'[\s,]+'))) {
+    final tag = raw.replaceAll('#', '').trim();
+    if (tag.isEmpty || tags.contains(tag)) continue;
+    tags.add(tag);
+    if (tags.length == 3) break;
+  }
+  return tags;
+}
+
+/// 새 이야기 쓰기: 곡 고르기 → 제목 → 짧은 이야기 → 해시태그
+///
+/// 개인 사진은 올리지 않는다. 이야기의 이미지는 고른 곡의 앨범 아트뿐이다.
 class CreateContentScreen extends StatefulWidget {
   const CreateContentScreen({super.key});
 
@@ -26,500 +35,320 @@ class CreateContentScreen extends StatefulWidget {
 }
 
 class _CreateContentScreenState extends State<CreateContentScreen> {
-  ContentsController get _controller => Get.find<ContentsController>();
+  final _title = TextEditingController();
+  final _body = TextEditingController();
+  final _tags = TextEditingController();
 
-  // Image 저장 변수
-  File? pickedImage;
-
-  // Form Key
-  final formKey = GlobalKey<FormState>();
-
-  // 게시글 제목 컨트롤러
-  final TextEditingController _titleController = TextEditingController();
-
-  // 게시글 내용 컨트롤러
-  final TextEditingController _contentController = TextEditingController();
-
-  // 해시태그 내용 컨트롤러
-  final TextEditingController _hashtagController1 = TextEditingController();
-  final TextEditingController _hashtagController2 = TextEditingController();
-  final TextEditingController _hashtagController3 = TextEditingController();
-
-  // User 정보 불러오기
+  ContentsController get _contents => Get.find<ContentsController>();
   MusicController get _music => Get.find<MusicController>();
 
   @override
   void initState() {
     super.initState();
-    // 이전에 작성하다 만 게시물의 곡이 남아 있지 않도록 비운다.
+    // 이전에 작성하다 만 이야기의 곡이 남아 있지 않도록 비운다.
     _music.clearPickedTrack();
   }
 
-  // 컨텐츠 이미지
-  _pickContentsImage() async {
-    final imagePicker = ImagePicker();
-    final pickedImageFile = await imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 100,
-      maxHeight: 300,
+  @override
+  void dispose() {
+    _title.dispose();
+    _body.dispose();
+    _tags.dispose();
+    super.dispose();
+  }
+
+  void _pickTrack() {
+    // 곡 선택은 게시물당 한 곡이라, 이미 골랐으면 비우고 다시 고르게 한다. ([바꾸기])
+    _music.clearPickedTrack();
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ContentTrackSearchScreen()),
     );
-    setState(() {
-      if (pickedImageFile != null) {
-        pickedImage = File(pickedImageFile.path);
-      }
-    });
   }
 
-  // 이미지 미리보기
-  Widget _buildImagePreview() {
-    if (pickedImage != null) {
-      return Container(
-        width: MediaQuery.of(context).size.width,
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50.withValues(alpha: .1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Image.file(
-          pickedImage!,
-          fit: BoxFit.cover,
-        ),
-      );
-    } else {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: 200,
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.file_upload_outlined,
-              color: Colors.blue,
-              size: 50,
-            ),
-            SizedBox(height: 15),
-            Text(
-              'Select your file',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  // 게시글 작성 후 저장
-  Future<void> _createContentsAndPost() async {
-    if (pickedImage == null) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('오류'),
-            content: const Text('이미지를 선택해주세요.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('확인'),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
-    // 예전에는 곡을 고르지 않으면 selectTrack[0]에서 앱이 멈췄다.
+  Future<void> _submit() async {
     final track = _music.pickedTrack.value;
     if (track == null) {
-      showErrorSnackBar(context, '게시물에 붙일 곡을 선택해 주세요.');
+      showErrorSnackBar(context, '이 이야기에 어울리는 곡을 골라주세요.');
       return;
     }
+    if (_title.text.trim().isEmpty) {
+      showErrorSnackBar(context, '제목을 적어주세요.');
+      return;
+    }
+    if (_body.text.trim().isEmpty) {
+      showErrorSnackBar(context, '짧은 이야기를 적어주세요.');
+      return;
+    }
+    FocusScope.of(context).unfocus();
 
-    final result = await _controller.post(
-      NewContent(
-        title: _titleController.text,
-        body: _contentController.text,
-        image: pickedImage!,
-        hashTags: [
-          _hashtagController1.text,
-          _hashtagController2.text,
-          _hashtagController3.text,
-        ],
-        track: ContentTrack(
-          name: track.name,
-          artistsName: track.artistsName,
-          imageUrl: track.imageUrl,
-        ),
+    final result = await _contents.post(NewContent(
+      title: _title.text,
+      body: _body.text,
+      hashTags: parseHashTags(_tags.text),
+      track: ContentTrack(
+        name: track.name,
+        artistsName: track.artistsName,
+        imageUrl: track.imageUrl,
       ),
-    );
+    ));
     if (!mounted) return;
-    // 예전에는 업로드 중 에러가 나면 로딩 화면이 풀리지 않았다.
     if (result case Failed(:final failure)) {
       showErrorSnackBar(context, failure.message);
       return;
     }
-
-    //작성 완료 후 입력 필드 초기화
-
-    _titleController.clear();
-    _contentController.clear();
-    _hashtagController1.clear();
-    _hashtagController2.clear();
-    _hashtagController3.clear();
     _music.clearPickedTrack();
-    setState(() {
-      pickedImage = null;
-    });
-    // 마이페이지에서 열린 화면이므로 돌아간다. (예전에는 마이페이지를 새로 push해서 화면이 쌓였다)
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Obx(
-        () => ModalProgressHUD(
-          inAsyncCall: _controller.isPosting.value,
-          child: StreamBuilder<UserProfile?>(
-            stream: _controller.watchAuthor(_controller.uid),
-            builder: (context, snapshot) {
-              return snapshot.data != null
-                  ? SingleChildScrollView(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+    return Theme(
+      data: AppTheme.light,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: Builder(
+          builder: (context) {
+            final c = context.colors;
+            final t = context.textStyles;
+            return Scaffold(
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    _TopBar(
+                        onClose: () => Navigator.of(context).maybePop(),
+                        onSubmit: _submit),
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                        children: [
+                          Obx(() => Text(
+                                '${formatCount(_contents.myContents.length + 1)}번째 이야기',
+                                style: AppTypography.display(
+                                    size: 13,
+                                    weight: FontWeight.w700,
+                                    color: c.accentText),
+                              )),
+                          const SizedBox(height: AppSpacing.s),
+                          Obx(() => _TrackPicker(
+                              track: _music.pickedTrack.value,
+                              onPick: _pickTrack)),
+                          const SizedBox(height: AppSpacing.l),
+                          _Field(
+                            child: TextField(
+                              controller: _title,
+                              maxLength: 40,
+                              textInputAction: TextInputAction.next,
+                              style: t.headlineSmall,
+                              decoration: _plain(
+                                  '제목',
+                                  t.headlineSmall
+                                      ?.copyWith(color: c.textTertiary)),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.s + 2),
+                          _Field(
+                            child: TextField(
+                              controller: _body,
+                              minLines: 6,
+                              maxLines: null,
+                              maxLength: 500,
+                              keyboardType: TextInputType.multiline,
+                              style: t.bodyMedium,
+                              decoration: _plain(
+                                '이 노래와 함께한 순간을 짧게 적어보세요.',
+                                t.bodyMedium?.copyWith(color: c.textTertiary),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.s + 2),
+                          _Field(
+                            child: TextField(
+                              controller: _tags,
+                              textInputAction: TextInputAction.done,
+                              style: t.bodyLarge,
+                              decoration: _plain(
+                                '#새벽 #위로  (띄어쓰기로 구분, 최대 3개)',
+                                t.bodyLarge?.copyWith(color: c.textTertiary),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.m),
+                          Row(
                             children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 200,
-                                  ),
-
-                                  // 프로필 사진
-                                  Positioned(
-                                    top: 30,
-                                    left: 10,
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.transparent,
-                                      radius: 70,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(70),
-                                        child: Image.network(
-                                          snapshot.data!.profileImageUrl,
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.center,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  // 프로필 아이디
-                                  Positioned(
-                                    top: 100,
-                                    left: 170,
-                                    child: Text(
-                                      '${snapshot.data!.userName}님',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const Positioned(
-                                    top: 140,
-                                    left: 170,
-                                    child: Text(
-                                      '어떤 음악을 추천 받고 싶나요?',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-
-                                  // 뒤로가기 버튼
-                                  Positioned(
-                                    top: 15,
-                                    right: 10,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      icon: const Icon(
-                                        Icons.arrow_back_rounded,
-                                        color: Colors.white,
-                                        size: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Icon(Icons.info_outline_rounded,
+                                  size: 16, color: c.textTertiary),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  '사진은 올리지 않아요. 고른 곡의 앨범이 이야기의 이미지가 돼요.',
+                                  style: t.bodySmall
+                                      ?.copyWith(color: c.textTertiary),
+                                ),
                               ),
-                              const SizedBox(height: 20),
-                              const ShortLine(color: Colors.amber),
-                              const SizedBox(height: 10),
-
-                              // 게시물 작성
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '게시물 작성',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              const ShortLine(color: Colors.amber),
-                              const SizedBox(height: 30),
-
-                              // 게시물 이미지
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  // 게시물 이미지 출력
-                                  GestureDetector(
-                                    onTap: () async {
-                                      try {
-                                        _pickContentsImage();
-                                      } catch (e) {
-                                        const CircularProgressIndicator();
-                                      }
-                                    },
-                                    child: DottedBorder(
-                                      borderType: BorderType.RRect,
-                                      radius: const Radius.circular(10),
-                                      dashPattern: const [10, 4],
-                                      strokeCap: StrokeCap.round,
-                                      color: Colors.white,
-                                      child: _buildImagePreview(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-
-                              // 컨텐츠 내용 입력.
-                              Column(
-                                children: [
-                                  // 게시물 제목 입력
-                                  DottedBorder(
-                                    borderType: BorderType.RRect,
-                                    radius: const Radius.circular(10),
-                                    dashPattern: const [10, 4],
-                                    strokeCap: StrokeCap.round,
-                                    color: Colors.white,
-
-                                    // 입력 창
-                                    child: TextField(
-                                      style:
-                                          const TextStyle(color: Colors.grey),
-                                      controller: _titleController,
-                                      decoration: const InputDecoration(
-                                        hintText: ' 게시물 제목을 입력해 주세요.',
-                                        hintStyle:
-                                            TextStyle(color: Colors.grey),
-                                        border: InputBorder.none,
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // 게시물 내용 입력
-                                  DottedBorder(
-                                    borderType: BorderType.RRect,
-                                    radius: const Radius.circular(10),
-                                    dashPattern: const [10, 4],
-                                    strokeCap: StrokeCap.round,
-                                    color: Colors.white,
-
-                                    // 입력 창
-                                    child: TextField(
-                                      style:
-                                          const TextStyle(color: Colors.grey),
-                                      controller: _contentController,
-                                      decoration: const InputDecoration(
-                                        hintText: ' 내용을 입력해 주세요.',
-                                        hintStyle:
-                                            TextStyle(color: Colors.grey),
-                                        border: InputBorder.none,
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        // 해시태그
-                                        HashTagInputBox(
-                                          text: ' 해시태그',
-                                          controller: _hashtagController1,
-                                        ),
-
-                                        HashTagInputBox(
-                                          text: ' 해시태그',
-                                          controller: _hashtagController2,
-                                        ),
-
-                                        HashTagInputBox(
-                                          text: ' 해시태그',
-                                          controller: _hashtagController3,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  const Height(80),
-                                  const ShortLine(color: Colors.amber),
-                                  const Height(10),
-
-                                  // 게시물 작성
-                                  const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        '게시물 음악 검색',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  ),
-                                  const Height(10),
-                                  const ShortLine(color: Colors.amber),
-                                  const Height(40),
-                                  Obx(
-                                    () => _music.pickedTrack.value == null
-                                        ? GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const ContentTrackSearchScreen()));
-                                            },
-                                            child: DottedBorder(
-                                              borderType: BorderType.RRect,
-                                              radius: const Radius.circular(10),
-                                              dashPattern: const [10, 4],
-                                              strokeCap: StrokeCap.round,
-                                              color: Colors.white,
-                                              child: const SpotifySearch(),
-                                            ),
-                                          )
-                                        : Column(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                  Radius.circular(30),
-                                                ),
-                                                child: Image.network(
-                                                  _music.pickedTrack.value!
-                                                      .imageUrl,
-                                                  scale: 3.5,
-                                                ),
-                                              ),
-                                              height10,
-                                              Text(
-                                                _music.pickedTrack.value!.name,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              Text(
-                                                _music.pickedTrack.value!
-                                                    .artistsName,
-                                                style: const TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                  ),
-
-                                  const Height(40),
-
-                                  CheckButton(
-                                    width: 60,
-                                    height: 60,
-                                    borderColor: Colors.redAccent,
-                                    icon: Icons.check,
-                                    iconColor: Colors.white,
-                                    iconSize: 40,
-                                    onTap: _createContentsAndPost,
-                                  ),
-                                ],
-                              )
                             ],
                           ),
-                        ),
+                        ],
                       ),
-                    )
-                  : const Center(child: CircularProgressIndicator());
-            },
-          ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  InputDecoration _plain(String hint, TextStyle? hintStyle) => InputDecoration(
+        hintText: hint,
+        hintStyle: hintStyle,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        filled: false,
+        isCollapsed: true,
+        counterText: '',
+      );
+}
+
+/// 닫기 · "새 이야기" · [올리기]
+class _TopBar extends StatelessWidget {
+  const _TopBar({required this.onClose, required this.onSubmit});
+
+  final VoidCallback onClose;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final posting = Get.find<ContentsController>().isPosting;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: '닫기',
+            onPressed: onClose,
+            icon: Icon(Icons.close_rounded, color: c.textPrimary),
+          ),
+          Expanded(
+              child: Text('새 이야기',
+                  style:
+                      context.textStyles.titleMedium?.copyWith(fontSize: 16))),
+          Obx(() => FilledButton(
+                onPressed: posting.value ? null : onSubmit,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(72, 40),
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderS),
+                ),
+                child: posting.value
+                    ? SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: c.textTertiary),
+                      )
+                    : const Text('올리기'),
+              )),
+        ],
       ),
     );
   }
 }
 
-class SpotifySearch extends StatelessWidget {
-  const SpotifySearch({
-    super.key,
-  });
+/// 곡 고르기: 고르기 전에는 점선 안내, 고른 뒤에는 앨범과 곡 정보
+class _TrackPicker extends StatelessWidget {
+  const _TrackPicker({required this.track, required this.onPick});
+
+  final Track? track;
+  final VoidCallback onPick;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width,
-      height: 200,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/logo/spotify_logo.png',
-            scale: 2,
-          ),
-          height10,
-          const Text(
-            'Spotify에서 검색하기',
-            style: TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
+    final c = context.colors;
+    final t = context.textStyles;
+    final picked = track;
+    if (picked == null) {
+      return Material(
+        color: c.surface,
+        borderRadius: AppRadius.borderXl,
+        child: InkWell(
+          onTap: onPick,
+          borderRadius: AppRadius.borderXl,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.borderXl,
+              border: Border.all(color: c.surfaceMuted, width: 2),
             ),
-          )
+            child: Column(
+              children: [
+                Icon(Icons.album_outlined, size: 36, color: c.textPrimary),
+                const SizedBox(height: AppSpacing.s),
+                Text('이 이야기에 어울리는 곡을 골라주세요', style: t.titleMedium),
+                const SizedBox(height: 2),
+                Text('곡의 앨범이 이야기 카드의 B면이 돼요', style: t.bodySmall),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.m),
+      decoration:
+          BoxDecoration(color: c.surface, borderRadius: AppRadius.borderXl),
+      child: Row(
+        children: [
+          AlbumArt(
+            image: networkImageOrNull(picked.imageUrl),
+            size: 72,
+            radius: AppRadius.m,
+            semanticLabel: '${picked.name} 앨범 커버',
+          ),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('SIDE B · 노래',
+                    style: AppTypography.display(
+                        size: 11,
+                        weight: FontWeight.w700,
+                        color: c.textTertiary)),
+                Text(picked.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.titleMedium?.copyWith(fontSize: 16)),
+                Text(picked.artistsName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.bodySmall),
+              ],
+            ),
+          ),
+          TextButton(onPressed: onPick, child: const Text('바꾸기')),
         ],
       ),
+    );
+  }
+}
+
+/// 흰 입력 카드
+class _Field extends StatelessWidget {
+  const _Field({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: 14),
+      decoration: BoxDecoration(
+          color: context.colors.surface, borderRadius: AppRadius.borderL),
+      child: child,
     );
   }
 }

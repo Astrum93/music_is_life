@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
 import 'package:music_is_life/features/contents/data/repositories/firebase_contents_repository.dart';
@@ -12,10 +11,7 @@ class ContentsBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<ContentsRepository>(
-      () => FirebaseContentsRepository(
-        Get.find<FirebaseFirestore>(),
-        Get.find<FirebaseStorage>(),
-      ),
+      () => FirebaseContentsRepository(Get.find<FirebaseFirestore>()),
       fenix: true,
     );
     // 홈·마이페이지는 AuthMiddleware 뒤에 있으므로 로그인한 사용자가 항상 있다.
