@@ -23,8 +23,8 @@ class HomeFragment extends StatefulWidget {
 class _HomeFragmentState extends State<HomeFragment> {
   int _currentIndex = 0;
 
-  /// 리디자인 라이트 테마로 옮긴 탭 (0: 홈, 2: 라운지)
-  static const _redesignedTabs = {0, 2};
+  /// 리디자인 라이트 테마로 옮긴 탭 (0: 홈, 1: 검색, 2: 라운지)
+  static const _redesignedTabs = {0, 1, 2};
 
   /// Tab Items
   final List<Widget> _tabItems = <Widget>[
