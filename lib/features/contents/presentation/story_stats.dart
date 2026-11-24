@@ -124,8 +124,12 @@ const _spectrumPalette = <Color>[
 /// 앨범 대표색이 아직 저장돼 있지 않아서, 같은 곡이면 늘 같은 색이 나오도록
 /// 곡 정보로 팔레트에서 고른다.
 /// TODO(redesign): 게시물을 저장할 때 앨범 대표색을 함께 저장하고 그 값을 쓴다.
-Color spectrumColorOf(Content content) {
-  final key = content.track?.imageUrl ?? content.track?.name ?? content.id;
+Color spectrumColorOf(Content content) => spectrumColorForKey(
+    content.track?.imageUrl ?? content.track?.name ?? content.id);
+
+/// [spectrumColorOf]와 같은 규칙으로, 곡 정보(앨범 주소 등) 문자열에서 색을 고른다.
+/// 프로필의 나의 인생곡처럼 게시물이 아닌 곳에서 같은 곡에 같은 색을 쓰기 위해서다.
+Color spectrumColorForKey(String key) {
   final hash = key.codeUnits.fold<int>(0, (h, u) => (h * 31 + u) & 0x7fffffff);
   return _spectrumPalette[hash % _spectrumPalette.length];
 }

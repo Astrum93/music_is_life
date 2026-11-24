@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/fcm/fcm_manager.dart';
-import 'package:music_is_life/core/theme/tokens/tokens.dart';
+import 'package:music_is_life/core/theme/app_theme.dart';
 import 'package:music_is_life/core/widgets/button/check_button.dart';
+import 'package:music_is_life/core/widgets/components/app_tab_bar.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/features/home/presentation/screen/home_screen.dart';
 import 'package:music_is_life/features/contents/presentation/lounge/lounge_fragment.dart';
@@ -22,9 +23,6 @@ class HomeFragment extends StatefulWidget {
 
 class _HomeFragmentState extends State<HomeFragment> {
   int _currentIndex = 0;
-
-  /// 리디자인 라이트 테마로 옮긴 탭 (0: 홈, 1: 검색, 2: 라운지)
-  static const _redesignedTabs = {0, 1, 2};
 
   /// Tab Items
   final List<Widget> _tabItems = <Widget>[
@@ -52,46 +50,18 @@ class _HomeFragmentState extends State<HomeFragment> {
         }
       },
       // 로그인 확인은 /home 라우트의 AuthMiddleware가 하고, 로그아웃하면 Welcome으로 이동한다.
-      child: Scaffold(
-        // 리디자인 라이트 테마로 옮긴 탭(홈, 라운지)은 상단 안전 영역도 같은 바탕색으로 칠한다.
-        backgroundColor: _redesignedTabs.contains(_currentIndex)
-            ? AppColorTokens.light.background
-            : null,
-        body: SafeArea(
-          child: _tabItems.elementAt(_currentIndex),
-        ),
-
-        /// Bottom Navigation Bar
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey.shade600,
-          showUnselectedLabels: true,
-          backgroundColor: Colors.black,
-          onTap: (int index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: '홈',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search_rounded),
-              label: '검색',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.multitrack_audio_sharp),
-              label: '라운지',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.messenger_outline_rounded),
-              label: '메신저',
-            ),
-          ],
+      // 탭 4개를 모두 리디자인 라이트 테마로 옮겼으므로 탭 틀(배경·하단 탭)도 라이트로 그린다.
+      // 로그아웃 다이얼로그는 기존 다크 디자인이라 이 Theme 바깥의 context로 연다.
+      child: Theme(
+        data: AppTheme.light,
+        child: Scaffold(
+          body: SafeArea(
+            child: _tabItems.elementAt(_currentIndex),
+          ),
+          bottomNavigationBar: AppTabBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+          ),
         ),
       ),
     );
