@@ -10,7 +10,7 @@ import 'package:music_is_life/features/contents/presentation/screens/create_cont
 import 'package:music_is_life/features/home/presentation/drawer/home_drawer.dart';
 import 'package:music_is_life/features/home/presentation/home_controller.dart';
 import 'package:music_is_life/features/home/presentation/screen/widget/home_cards.dart';
-import 'package:music_is_life/features/home/presentation/story_stats.dart';
+import 'package:music_is_life/features/contents/presentation/story_stats.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 import 'package:music_is_life/features/search/presentation/screen/search_fragment.dart';
 

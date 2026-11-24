@@ -6,15 +6,11 @@ import 'package:music_is_life/core/widgets/components/components.dart';
 import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/contents/domain/entities/content.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
-import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
-import 'package:music_is_life/features/home/presentation/screen/widget/track_player_sheet.dart';
+import 'package:music_is_life/features/contents/presentation/story_stats.dart';
+import 'package:music_is_life/features/friends/presentation/widgets/follow_button.dart';
 import 'package:music_is_life/features/home/presentation/screen/widget/user_info_mini.dart';
-import 'package:music_is_life/features/home/presentation/story_stats.dart';
+import 'package:music_is_life/features/music/presentation/widgets/track_player_sheet.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
-
-/// 비어 있는 주소는 이미지로 만들지 않는다.
-ImageProvider? networkImageOrNull(String? url) =>
-    (url == null || url.isEmpty) ? null : NetworkImage(url);
 
 /// 홈 맨 위: "D+412 · 오늘은 288번째 이야기를 남겨볼까요?"
 class MyDiaryCard extends StatelessWidget {
@@ -328,43 +324,6 @@ class HomeStoryCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// 작성자 팔로우 버튼
-class FollowButton extends StatelessWidget {
-  const FollowButton({super.key, required this.uid});
-
-  final String uid;
-
-  @override
-  Widget build(BuildContext context) {
-    final friends = Get.find<FriendsController>();
-    final c = context.colors;
-    return Obx(() {
-      final following = friends.isFollowing(uid);
-      return TextButton(
-        onPressed: () async {
-          final result = await friends.toggleFollow(uid);
-          if (result case Failed(:final failure) when context.mounted) {
-            showErrorSnackBar(context, failure.message);
-          }
-        },
-        style: TextButton.styleFrom(
-          backgroundColor: following ? Colors.transparent : c.background,
-          foregroundColor: following ? c.textSecondary : c.textPrimary,
-          minimumSize: const Size(0, 32),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          tapTargetSize: MaterialTapTargetSize.padded,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppRadius.borderS,
-            side: following ? BorderSide(color: c.border) : BorderSide.none,
-          ),
-          textStyle: context.textStyles.labelLarge?.copyWith(fontSize: 13),
-        ),
-        child: Text(following ? '팔로잉' : '팔로우'),
-      );
-    });
   }
 }
 

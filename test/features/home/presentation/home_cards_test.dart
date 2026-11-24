@@ -12,7 +12,7 @@ import 'package:music_is_life/features/friends/domain/entities/friend_relations.
 import 'package:music_is_life/features/friends/domain/repositories/friends_repository.dart';
 import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:music_is_life/features/home/presentation/screen/widget/home_cards.dart';
-import 'package:music_is_life/features/home/presentation/story_stats.dart';
+import 'package:music_is_life/features/contents/presentation/story_stats.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 import 'package:music_is_life/features/profile/domain/repositories/profile_repository.dart';
 

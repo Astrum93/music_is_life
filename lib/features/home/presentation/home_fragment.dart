@@ -23,6 +23,9 @@ class HomeFragment extends StatefulWidget {
 class _HomeFragmentState extends State<HomeFragment> {
   int _currentIndex = 0;
 
+  /// 리디자인 라이트 테마로 옮긴 탭 (0: 홈, 2: 라운지)
+  static const _redesignedTabs = {0, 2};
+
   /// Tab Items
   final List<Widget> _tabItems = <Widget>[
     const HomeScreen(),
@@ -50,9 +53,10 @@ class _HomeFragmentState extends State<HomeFragment> {
       },
       // 로그인 확인은 /home 라우트의 AuthMiddleware가 하고, 로그아웃하면 Welcome으로 이동한다.
       child: Scaffold(
-        // 홈 탭은 리디자인 라이트 테마라 상단 안전 영역도 같은 바탕색으로 칠한다.
-        backgroundColor:
-            _currentIndex == 0 ? AppColorTokens.light.background : null,
+        // 리디자인 라이트 테마로 옮긴 탭(홈, 라운지)은 상단 안전 영역도 같은 바탕색으로 칠한다.
+        backgroundColor: _redesignedTabs.contains(_currentIndex)
+            ? AppColorTokens.light.background
+            : null,
         body: SafeArea(
           child: _tabItems.elementAt(_currentIndex),
         ),

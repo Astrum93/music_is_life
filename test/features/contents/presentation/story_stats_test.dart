@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/core/widgets/components/tier_badge.dart';
 import 'package:music_is_life/features/contents/domain/entities/content.dart';
-import 'package:music_is_life/features/home/presentation/story_stats.dart';
+import 'package:music_is_life/features/contents/presentation/story_stats.dart';
 
 Content _story(
   String id, {
