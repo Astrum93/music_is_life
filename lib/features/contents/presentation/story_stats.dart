@@ -129,3 +129,82 @@ Color spectrumColorOf(Content content) {
   final hash = key.codeUnits.fold<int>(0, (h, u) => (h * 31 + u) & 0x7fffffff);
   return _spectrumPalette[hash % _spectrumPalette.length];
 }
+
+/// 이야기를 남긴 서로 다른 날의 수 ("기록한 날 241일")
+int recordedDayCount(List<Content> stories) =>
+    stories.map((c) => _dateOnly(c.createdAt)).toSet().length;
+
+/// 디스코그래피의 한 장: 한 해의 이야기를 묶은 "Vol.N"
+class DiscographyVolume {
+  const DiscographyVolume({
+    required this.volume,
+    required this.year,
+    required this.stories,
+  });
+
+  /// 첫 이야기를 남긴 해가 Vol.1
+  final int volume;
+  final int year;
+
+  /// 그해 이야기 (오래된 순)
+  final List<Content> stories;
+}
+
+/// 내 이야기를 해마다 묶는다. 최신 해가 앞에 온다.
+///
+/// 이야기가 없는 해가 있어도 Vol 번호는 첫 해부터 해마다 하나씩 센다.
+List<DiscographyVolume> discographyOf(List<Content> stories) {
+  if (stories.isEmpty) return const [];
+  final byYear = <int, List<Content>>{};
+  for (final c in stories) {
+    (byYear[c.createdAt.year] ??= []).add(c);
+  }
+  final firstYear = byYear.keys.reduce((a, b) => a < b ? a : b);
+  final years = byYear.keys.toList()..sort((a, b) => b.compareTo(a));
+  return [
+    for (final year in years)
+      DiscographyVolume(
+        volume: year - firstYear + 1,
+        year: year,
+        stories: byYear[year]!
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+      ),
+  ];
+}
+
+/// 타임라인의 한 달 묶음
+class MonthGroup {
+  const MonthGroup({
+    required this.year,
+    required this.month,
+    required this.stories,
+  });
+
+  final int year;
+  final int month;
+
+  /// 그달 이야기 (최신순)
+  final List<Content> stories;
+}
+
+/// 이야기를 달마다 묶는다. 최신 달이 앞에 오고, 달 안에서도 최신순이다.
+List<MonthGroup> groupByMonth(List<Content> stories) {
+  final sorted = [...stories]
+    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  final groups = <MonthGroup>[];
+  for (final c in sorted) {
+    final last = groups.isEmpty ? null : groups.last;
+    if (last != null &&
+        last.year == c.createdAt.year &&
+        last.month == c.createdAt.month) {
+      last.stories.add(c);
+    } else {
+      groups.add(MonthGroup(
+        year: c.createdAt.year,
+        month: c.createdAt.month,
+        stories: [c],
+      ));
+    }
+  }
+  return groups;
+}
