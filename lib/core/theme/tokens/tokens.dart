@@ -14,7 +14,7 @@ export 'app_typography.dart';
 /// ```
 extension ThemeTokensX on BuildContext {
   AppColorTokens get colors =>
-      Theme.of(this).extension<AppColorTokens>() ?? AppColorTokens.dark;
+      Theme.of(this).extension<AppColorTokens>() ?? AppColorTokens.light;
 
   TextTheme get textStyles => Theme.of(this).textTheme;
 }
