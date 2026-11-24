@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:music_is_life/core/constant/app_colors.dart';
 import 'package:music_is_life/core/fcm/fcm_manager.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
 import 'package:music_is_life/core/widgets/button/check_button.dart';
 import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/features/home/presentation/screen/home_screen.dart';
@@ -49,43 +50,46 @@ class _HomeFragmentState extends State<HomeFragment> {
       },
       // 로그인 확인은 /home 라우트의 AuthMiddleware가 하고, 로그아웃하면 Welcome으로 이동한다.
       child: Scaffold(
-              body: SafeArea(
-                child: _tabItems.elementAt(_currentIndex),
-              ),
+        // 홈 탭은 리디자인 라이트 테마라 상단 안전 영역도 같은 바탕색으로 칠한다.
+        backgroundColor:
+            _currentIndex == 0 ? AppColorTokens.light.background : null,
+        body: SafeArea(
+          child: _tabItems.elementAt(_currentIndex),
+        ),
 
-              /// Bottom Navigation Bar
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: _currentIndex,
-                type: BottomNavigationBarType.fixed,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.grey.shade600,
-                showUnselectedLabels: true,
-                backgroundColor: Colors.black,
-                onTap: (int index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                items: const <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home_rounded),
-                    label: '홈',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.search_rounded),
-                    label: '검색',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.multitrack_audio_sharp),
-                    label: '라운지',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.messenger_outline_rounded),
-                    label: '메신저',
-                  ),
-                ],
-              ),
+        /// Bottom Navigation Bar
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey.shade600,
+          showUnselectedLabels: true,
+          backgroundColor: Colors.black,
+          onTap: (int index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: '홈',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search_rounded),
+              label: '검색',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.multitrack_audio_sharp),
+              label: '라운지',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.messenger_outline_rounded),
+              label: '메신저',
+            ),
+          ],
+        ),
+      ),
     );
   }
 

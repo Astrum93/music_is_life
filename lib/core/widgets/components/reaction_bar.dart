@@ -11,10 +11,10 @@ class ReactionBar extends StatelessWidget {
     required this.resonanceCount,
     required this.resonated,
     required this.onResonance,
-    required this.guestbookCount,
-    required this.onGuestbook,
-    required this.saved,
-    required this.onSave,
+    this.guestbookCount,
+    this.onGuestbook,
+    this.saved,
+    this.onSave,
     this.onImage = false,
   });
 
@@ -24,11 +24,12 @@ class ReactionBar extends StatelessWidget {
   final bool resonated;
   final VoidCallback? onResonance;
 
-  final int guestbookCount;
+  /// 방명록 글 수. null이면 방명록 버튼을 숨긴다.
+  final int? guestbookCount;
   final VoidCallback? onGuestbook;
 
-  /// 내 일기장에 담았는지
-  final bool saved;
+  /// 내 일기장에 담았는지. null이면 담기 버튼을 숨긴다.
+  final bool? saved;
   final VoidCallback? onSave;
 
   /// 앨범 이미지 위에 올릴 때 true (라운지 몰입형 카드)
@@ -51,29 +52,33 @@ class ReactionBar extends StatelessWidget {
                   onImage: onImage,
                 ),
               ),
-              const SizedBox(width: 6),
-              TextButton.icon(
-                onPressed: onGuestbook,
-                style: TextButton.styleFrom(
-                  foregroundColor: iconColor,
-                  minimumSize: const Size(44, 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  textStyle:
-                      context.textStyles.labelLarge?.copyWith(fontSize: 13),
+              if (guestbookCount != null) ...[
+                const SizedBox(width: 6),
+                TextButton.icon(
+                  onPressed: onGuestbook,
+                  style: TextButton.styleFrom(
+                    foregroundColor: iconColor,
+                    minimumSize: const Size(44, 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    textStyle:
+                        context.textStyles.labelLarge?.copyWith(fontSize: 13),
+                  ),
+                  icon: const Icon(Icons.sticky_note_2_outlined, size: 20),
+                  label: Text(formatReactionCount(guestbookCount!)),
                 ),
-                icon: const Icon(Icons.sticky_note_2_outlined, size: 20),
-                label: Text(formatReactionCount(guestbookCount)),
-              ),
+              ],
             ],
           ),
         ),
-        IconButton(
-          onPressed: onSave,
-          tooltip: saved ? '내 일기장에서 빼기' : '내 일기장에 담기',
-          color: iconColor,
-          icon: Icon(
-              saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded),
-        ),
+        if (saved != null)
+          IconButton(
+            onPressed: onSave,
+            tooltip: saved! ? '내 일기장에서 빼기' : '내 일기장에 담기',
+            color: iconColor,
+            icon: Icon(saved!
+                ? Icons.bookmark_rounded
+                : Icons.bookmark_border_rounded),
+          ),
       ],
     );
   }
