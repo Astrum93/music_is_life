@@ -50,16 +50,19 @@ class TierBadge extends StatelessWidget {
     return Container(
       height: 20,
       padding: const EdgeInsets.symmetric(horizontal: 7),
-      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: background,
         borderRadius: AppRadius.borderXs,
       ),
-      child: Text(
-        tier.label,
-        style: context.textStyles.labelSmall?.copyWith(
-          color: foreground,
-          fontWeight: FontWeight.w800,
+      // alignment를 주면 세로 배치 안에서 부모 폭만큼 늘어나므로 글자 폭에 맞춘다.
+      child: Align(
+        widthFactor: 1,
+        child: Text(
+          tier.label,
+          style: context.textStyles.labelSmall?.copyWith(
+            color: foreground,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
     );

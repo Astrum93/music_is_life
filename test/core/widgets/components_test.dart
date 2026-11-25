@@ -107,6 +107,13 @@ void main() {
 
     expect(find.text('SIDE A · 이야기'), findsOneWidget);
     expect(find.text('파도 소리'), findsNothing);
+    // SIDE 표시는 카드 폭으로 늘어나지 않고 글자 폭에 맞춘 알약이다.
+    final label = tester.getSize(find
+        .ancestor(
+            of: find.text('SIDE A · 이야기'), matching: find.byType(Container))
+        .first);
+    expect(label.width,
+        lessThan(tester.getSize(find.byType(StoryFlipCard)).width / 1.2));
 
     await tester.tap(find.byType(StoryFlipCard));
     await tester.pumpAndSettle();

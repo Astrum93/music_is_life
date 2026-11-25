@@ -273,18 +273,21 @@ class _SideLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Container에 alignment를 주면 부모 폭만큼 늘어나므로, 글자 폭에 맞추도록 widthFactor를 쓴다.
     return Container(
       height: 26,
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: dark ? const Color(0x73000000) : const Color(0x33FFFFFF),
         borderRadius: AppRadius.borderFull,
       ),
-      child: Text(
-        text,
-        style: AppTypography.display(
-            size: 12, weight: FontWeight.w700, color: Colors.white),
+      child: Align(
+        widthFactor: 1,
+        child: Text(
+          text,
+          style: AppTypography.display(
+              size: 12, weight: FontWeight.w700, color: Colors.white),
+        ),
       ),
     );
   }
