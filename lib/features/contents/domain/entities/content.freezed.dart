@@ -21,6 +21,8 @@ mixin _$Content {
   String get authorName;
   String get title;
   String get body;
+
+  /// 예전 게시물의 사진 주소. 사진 업로드를 없앤 뒤 새 게시물은 빈 문자열이다.
   String get imageUrl;
   DateTime get createdAt;
   List<String> get hashTags;
@@ -429,6 +431,8 @@ class _Content extends Content {
   final String title;
   @override
   final String body;
+
+  /// 예전 게시물의 사진 주소. 사진 업로드를 없앤 뒤 새 게시물은 빈 문자열이다.
   @override
   final String imageUrl;
   @override
@@ -937,7 +941,6 @@ class __$ContentTrackCopyWithImpl<$Res>
 mixin _$NewContent {
   String get title;
   String get body;
-  File get image;
   ContentTrack get track;
   List<String> get hashTags;
 
@@ -955,18 +958,17 @@ mixin _$NewContent {
             other is NewContent &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.body, body) || other.body == body) &&
-            (identical(other.image, image) || other.image == image) &&
             (identical(other.track, track) || other.track == track) &&
             const DeepCollectionEquality().equals(other.hashTags, hashTags));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, title, body, image, track,
+  int get hashCode => Object.hash(runtimeType, title, body, track,
       const DeepCollectionEquality().hash(hashTags));
 
   @override
   String toString() {
-    return 'NewContent(title: $title, body: $body, image: $image, track: $track, hashTags: $hashTags)';
+    return 'NewContent(title: $title, body: $body, track: $track, hashTags: $hashTags)';
   }
 }
 
@@ -977,11 +979,7 @@ abstract mixin class $NewContentCopyWith<$Res> {
       _$NewContentCopyWithImpl;
   @useResult
   $Res call(
-      {String title,
-      String body,
-      File image,
-      ContentTrack track,
-      List<String> hashTags});
+      {String title, String body, ContentTrack track, List<String> hashTags});
 
   $ContentTrackCopyWith<$Res> get track;
 }
@@ -1000,7 +998,6 @@ class _$NewContentCopyWithImpl<$Res> implements $NewContentCopyWith<$Res> {
   $Res call({
     Object? title = null,
     Object? body = null,
-    Object? image = null,
     Object? track = null,
     Object? hashTags = null,
   }) {
@@ -1013,10 +1010,6 @@ class _$NewContentCopyWithImpl<$Res> implements $NewContentCopyWith<$Res> {
           ? _self.body
           : body // ignore: cast_nullable_to_non_nullable
               as String,
-      image: null == image
-          ? _self.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as File,
       track: null == track
           ? _self.track
           : track // ignore: cast_nullable_to_non_nullable
@@ -1132,7 +1125,7 @@ extension NewContentPatterns on NewContent {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String title, String body, File image, ContentTrack track,
+    TResult Function(String title, String body, ContentTrack track,
             List<String> hashTags)?
         $default, {
     required TResult orElse(),
@@ -1140,8 +1133,7 @@ extension NewContentPatterns on NewContent {
     final _that = this;
     switch (_that) {
       case _NewContent() when $default != null:
-        return $default(
-            _that.title, _that.body, _that.image, _that.track, _that.hashTags);
+        return $default(_that.title, _that.body, _that.track, _that.hashTags);
       case _:
         return orElse();
     }
@@ -1162,15 +1154,14 @@ extension NewContentPatterns on NewContent {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String title, String body, File image, ContentTrack track,
+    TResult Function(String title, String body, ContentTrack track,
             List<String> hashTags)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NewContent():
-        return $default(
-            _that.title, _that.body, _that.image, _that.track, _that.hashTags);
+        return $default(_that.title, _that.body, _that.track, _that.hashTags);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -1190,15 +1181,14 @@ extension NewContentPatterns on NewContent {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String title, String body, File image, ContentTrack track,
+    TResult? Function(String title, String body, ContentTrack track,
             List<String> hashTags)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NewContent() when $default != null:
-        return $default(
-            _that.title, _that.body, _that.image, _that.track, _that.hashTags);
+        return $default(_that.title, _that.body, _that.track, _that.hashTags);
       case _:
         return null;
     }
@@ -1211,7 +1201,6 @@ class _NewContent implements NewContent {
   const _NewContent(
       {required this.title,
       required this.body,
-      required this.image,
       required this.track,
       final List<String> hashTags = const <String>[]})
       : _hashTags = hashTags;
@@ -1220,8 +1209,6 @@ class _NewContent implements NewContent {
   final String title;
   @override
   final String body;
-  @override
-  final File image;
   @override
   final ContentTrack track;
   final List<String> _hashTags;
@@ -1248,18 +1235,17 @@ class _NewContent implements NewContent {
             other is _NewContent &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.body, body) || other.body == body) &&
-            (identical(other.image, image) || other.image == image) &&
             (identical(other.track, track) || other.track == track) &&
             const DeepCollectionEquality().equals(other._hashTags, _hashTags));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, title, body, image, track,
+  int get hashCode => Object.hash(runtimeType, title, body, track,
       const DeepCollectionEquality().hash(_hashTags));
 
   @override
   String toString() {
-    return 'NewContent(title: $title, body: $body, image: $image, track: $track, hashTags: $hashTags)';
+    return 'NewContent(title: $title, body: $body, track: $track, hashTags: $hashTags)';
   }
 }
 
@@ -1272,11 +1258,7 @@ abstract mixin class _$NewContentCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String title,
-      String body,
-      File image,
-      ContentTrack track,
-      List<String> hashTags});
+      {String title, String body, ContentTrack track, List<String> hashTags});
 
   @override
   $ContentTrackCopyWith<$Res> get track;
@@ -1296,7 +1278,6 @@ class __$NewContentCopyWithImpl<$Res> implements _$NewContentCopyWith<$Res> {
   $Res call({
     Object? title = null,
     Object? body = null,
-    Object? image = null,
     Object? track = null,
     Object? hashTags = null,
   }) {
@@ -1309,10 +1290,6 @@ class __$NewContentCopyWithImpl<$Res> implements _$NewContentCopyWith<$Res> {
           ? _self.body
           : body // ignore: cast_nullable_to_non_nullable
               as String,
-      image: null == image
-          ? _self.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as File,
       track: null == track
           ? _self.track
           : track // ignore: cast_nullable_to_non_nullable

@@ -146,6 +146,23 @@ flutter:
     # Config
     - assets/config/.env
 
+  # 디자인 토큰 글꼴 (lib/core/theme/tokens/app_typography.dart), 둘 다 SIL OFL 1.1
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
+        - asset: assets/fonts/Pretendard-ExtraBold.otf
+          weight: 800
+    # 가변 글꼴: 굵기는 AppTypography.display의 fontVariations로 고른다
+    - family: BricolageGrotesque
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Variable.ttf
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

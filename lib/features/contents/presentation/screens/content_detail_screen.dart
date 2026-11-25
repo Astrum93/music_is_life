@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music_is_life/core/widgets/box/expanded_box.dart';
 import 'package:music_is_life/core/widgets/box/hash_tag_box.dart';
+import 'package:music_is_life/core/widgets/components/album_art.dart';
 import 'package:music_is_life/core/widgets/subject_container.dart';
 
 import 'package:music_is_life/core/widgets/short_line.dart';
@@ -111,23 +112,17 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
 
               const SizedBox(height: 10),
 
-              // 게시물 이미지
-              Hero(
-                tag: _content.imageUrl,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.05),
-                      width: 1,
-                    ),
-                  ),
-                  width: MediaQuery.of(context).size.width,
-                  height: 300,
-                  child: Image.network(
-                    _content.imageUrl,
-                    fit: BoxFit.fill,
-                  ),
+              // 게시물 이미지: 곡의 앨범 아트. 사진 업로드를 없앤 뒤 새 게시물은 사진 주소가
+              // 비어 있으므로, 곡이 없는 예전 게시물에서만 예전 사진을 보여준다.
+              AlbumArt(
+                image: networkImageOrNull(
+                  _content.track?.imageUrl ?? _content.imageUrl,
                 ),
+                size: MediaQuery.of(context).size.width,
+                radius: 0,
+                semanticLabel: _content.track == null
+                    ? null
+                    : '${_content.track!.name} 앨범 커버',
               ),
               const SizedBox(height: 20),
 
