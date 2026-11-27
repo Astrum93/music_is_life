@@ -99,7 +99,7 @@ void main() {
   testWidgets('검색하면 결과를 보여주고, 고르면 곡을 정하고 돌아간다', (tester) async {
     final (music, spotify) = await _pump(tester);
 
-    expect(find.text('이 이야기에 어울리는 곡을 찾아보세요.'), findsOneWidget);
+    expect(find.text('곡을 찾아보세요.'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '  city lights ');
     await tester.testTextInput.receiveAction(TextInputAction.search);

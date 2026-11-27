@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:marquee/marquee.dart';
-import 'package:music_is_life/core/constant/app_colors.dart';
-import 'package:music_is_life/core/constant/constants.dart';
-import 'package:music_is_life/core/widgets/button/check_button.dart';
-import 'package:music_is_life/core/widgets/width_height_widget.dart';
 import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/theme/app_theme.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
+import 'package:music_is_life/core/widgets/components/components.dart';
 import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/music/domain/entities/track.dart';
 import 'package:music_is_life/features/music/presentation/music_controller.dart';
 import 'package:music_is_life/features/music/presentation/screens/playlist_search_screen.dart';
+import 'package:music_is_life/features/music/presentation/widgets/spotify_track_search.dart';
+import 'package:music_is_life/features/music/presentation/widgets/track_player_sheet.dart';
+import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 
+/// 음악 컬렉션: 나의 인생곡 카드 · 담아 둔 곡 (길게 눌러 인생곡으로, 왼쪽으로 밀어 지우기)
 class MusicCollectionScreen extends StatefulWidget {
   const MusicCollectionScreen({super.key});
 
@@ -18,242 +21,328 @@ class MusicCollectionScreen extends StatefulWidget {
   State<MusicCollectionScreen> createState() => _MusicCollectionScreenState();
 }
 
-/// 마이 뮤직 (내 플레이리스트). 밀어서 삭제, 길게 눌러 대표곡 설정.
 class _MusicCollectionScreenState extends State<MusicCollectionScreen> {
   MusicController get _music => Get.find<MusicController>();
 
+  // 스트림을 build마다 새로 만들지 않도록 한 번만 만든다.
+  late final Stream<UserProfile?> _me = _music.watchMyProfile();
+
+  void _openSearch(BuildContext context) => Navigator.of(context)
+      .push(MaterialPageRoute(builder: (_) => const PlaylistSearchScreen()));
+
   Future<void> _remove(PlaylistEntry entry) async {
     final result = await _music.removeFromPlaylist(entry);
-    if (result case Failed(:final failure) when mounted) {
-      showErrorSnackBar(context, failure.message);
+    if (!mounted) return;
+    switch (result) {
+      case Success():
+        showDoneSnackBar(context, '「${entry.track.name}」을 지웠어요.');
+      case Failed(:final failure):
+        showErrorSnackBar(context, failure.message);
     }
   }
 
-  Future<void> _setProfileTrack(Track track) async {
+  Future<void> _askLifeSong(BuildContext context, Track track) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => Theme(
+        data: AppTheme.light,
+        child: _LifeSongDialog(track: track),
+      ),
+    );
+    if (ok != true || !mounted) return;
     final result = await _music.setProfileTrack(track);
     if (!mounted) return;
-    // 확인 다이얼로그를 닫는다.
-    Navigator.of(context).pop();
-    if (result case Failed(:final failure)) {
-      showErrorSnackBar(context, failure.message);
+    switch (result) {
+      case Success():
+        showDoneSnackBar(this.context, '인생곡을 「${track.name}」으로 바꿨어요.');
+      case Failed(:final failure):
+        showErrorSnackBar(this.context, failure.message);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('뮤직 리스트'),
-          centerTitle: true,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Obx(() {
-            final collectionDocs = _music.playlist.toList();
-
-            return ListView.builder(
-              itemCount: collectionDocs.length,
-              itemBuilder: (context, index) {
-                final entry = collectionDocs[index];
-                final track = entry.track;
-                final trackImage =
-                    track.imageUrl.isEmpty ? baseProfileImage : track.imageUrl;
-                final trackName = track.name;
-                final artistsName = track.artistsName;
-                return Column(
+    return Theme(
+      data: AppTheme.light,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: Builder(
+          builder: (context) {
+            final c = context.colors;
+            final t = context.textStyles;
+            return Scaffold(
+              body: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Dismissible(
-                      // 예전에는 순서(index)를 키로 써서, 삭제하면 다른 곡과 키가 겹쳤다.
-                      key: ValueKey(entry.docId),
-                      background: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8),
-                          ),
+                    ScreenTopBar(
+                      title: '음악 컬렉션',
+                      trailing: FilledButton.icon(
+                        onPressed: () => _openSearch(context),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 40),
+                          padding: const EdgeInsets.fromLTRB(10, 0, 14, 0),
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: AppRadius.borderS),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Width(20),
-                            Icon(
-                              Icons.delete_outline,
-                              color: Colors.white,
-                            ),
-                            Width(20),
-                          ],
-                        ),
-                      ),
-                      onDismissed: (direction) => _remove(entry),
-                      child: GestureDetector(
-                        onLongPress: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => Material(
-                              color: Colors.transparent,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 300,
-                                    height: 150,
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(20)),
-                                      border:
-                                          Border.all(color: Colors.redAccent),
-                                      color: AppColors.veryDarkGrey,
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        '현제 음악을 \n프로필 뮤직으로 \n설정 하시겠습니까?',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  height20,
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CheckButton(
-                                        width: 40,
-                                        height: 40,
-                                        boxColor: AppColors.veryDarkGrey,
-                                        borderColor: Colors.redAccent,
-                                        icon: Icons.close,
-                                        iconColor: Colors.redAccent,
-                                        onTap: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      const Width(150),
-                                      CheckButton(
-                                        width: 40,
-                                        height: 40,
-                                        boxColor: AppColors.veryDarkGrey,
-                                        borderColor: Colors.greenAccent,
-                                        icon: Icons.check,
-                                        iconColor: Colors.greenAccent,
-                                        onTap: () => _setProfileTrack(track),
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          width: MediaQuery.of(context).size.width - 10,
-                          height: 150,
-                          decoration: const BoxDecoration(
-                            color: Colors.transparent,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(30),
-                                ),
-                                child: Image.network(trackImage),
-                              ),
-                              width30,
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 8),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      trackName.length > 20
-                                          ? SizedBox(
-                                              width: trackName.length *
-                                                  11.toDouble(),
-                                              height: 50,
-                                              child: Marquee(
-                                                text: trackName,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20,
-                                                  color: Colors.white,
-                                                ),
-                                                scrollAxis: Axis.horizontal,
-                                                velocity: 30,
-                                                blankSpace: 40,
-                                              ),
-                                            )
-                                          : Text(
-                                              trackName,
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                      artistsName.length > 15
-                                          ? SizedBox(
-                                              width: artistsName.length *
-                                                  11.toDouble(),
-                                              height: 50,
-                                              child: Marquee(
-                                                text: artistsName,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15,
-                                                  color: Colors.grey.shade600,
-                                                ),
-                                                scrollAxis: Axis.horizontal,
-                                                velocity: 30,
-                                                blankSpace: 40,
-                                              ),
-                                            )
-                                          : Text(
-                                              artistsName,
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey.shade600,
-                                              ),
-                                            ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text('곡 담기'),
                       ),
                     ),
-                    height10,
+                    Expanded(
+                      child: StreamBuilder<UserProfile?>(
+                        stream: _me,
+                        builder: (context, snapshot) {
+                          final lifeSong = snapshot.data?.track;
+                          return Obx(() {
+                            final entries = _music.playlist.toList();
+                            return ListView(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                              children: [
+                                _LifeSongCard(track: lifeSong),
+                                const SizedBox(height: 20),
+                                Text.rich(
+                                  TextSpan(children: [
+                                    const TextSpan(text: '담아 둔 곡 '),
+                                    TextSpan(
+                                        text: formatCount(entries.length),
+                                        style:
+                                            TextStyle(color: c.textTertiary)),
+                                  ]),
+                                  style: t.titleLarge,
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.info_outline_rounded,
+                                        size: 14, color: c.textTertiary),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        '길게 누르면 인생곡으로 정해요 · 왼쪽으로 밀면 지워요',
+                                        style: t.labelMedium?.copyWith(
+                                            fontWeight: FontWeight.w400,
+                                            color: c.textTertiary),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                if (entries.isEmpty)
+                                  EmptyNotice(
+                                    icon: Icons.library_music_outlined,
+                                    title: '담아 둔 곡이 없어요.',
+                                    body:
+                                        '마음에 드는 곡을 담아 두면\n여기서 인생곡으로 정할 수 있어요.',
+                                    action: FilledButton(
+                                      onPressed: () => _openSearch(context),
+                                      child: const Text('곡 담으러 가기'),
+                                    ),
+                                  )
+                                else
+                                  for (final entry in entries)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          bottom: AppSpacing.s),
+                                      child: _CollectionRow(
+                                        entry: entry,
+                                        isLifeSong:
+                                            entry.track.id == lifeSong?.id,
+                                        onRemove: () => _remove(entry),
+                                        onLongPress: () =>
+                                            _askLifeSong(context, entry.track),
+                                      ),
+                                    ),
+                              ],
+                            );
+                          });
+                        },
+                      ),
+                    ),
                   ],
-                );
-              },
+                ),
+              ),
             );
-          }),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const PlaylistSearchScreen()));
           },
-          backgroundColor: AppColors.veryDarkGrey,
-          splashColor: Colors.amberAccent.withValues(alpha: 0.5),
-          child: const Icon(
-            Icons.search,
-            color: Colors.white,
-            size: 30,
+        ),
+      ),
+    );
+  }
+}
+
+/// 검은 "나의 인생곡" 카드
+class _LifeSongCard extends StatelessWidget {
+  const _LifeSongCard({required this.track});
+
+  final ProfileTrack? track;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.textStyles;
+    final song = track;
+    final cover = networkImageOrNull(song?.imageUrl);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+          color: c.inverseSurface, borderRadius: AppRadius.borderXl),
+      child: Row(
+        children: [
+          AlbumArt(image: cover, size: 76, radius: AppRadius.l - 2),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('LIFE SONG · 나의 인생곡',
+                    style: AppTypography.display(
+                        size: 12, weight: FontWeight.w700, color: c.gold)),
+                const SizedBox(height: 2),
+                Text(song?.name ?? '아직 정하지 않았어요',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.titleLarge?.copyWith(color: c.onInverseSurface)),
+                Text(song?.artistsName ?? '아래 곡을 길게 눌러 정해 보세요',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        t.bodySmall?.copyWith(color: c.onInverseSurfaceMuted)),
+              ],
+            ),
           ),
+          if (song != null)
+            IconButton.filled(
+              tooltip: '인생곡 듣기',
+              onPressed: () => showTrackPlayerSheet(context,
+                  title: song.name, artist: song.artistsName, cover: cover),
+              style: IconButton.styleFrom(
+                backgroundColor: c.onInverseSurface,
+                foregroundColor: c.inverseSurface,
+                fixedSize: const Size(48, 48),
+              ),
+              icon: const Icon(Icons.play_arrow_rounded),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 담아 둔 곡 한 줄: 왼쪽으로 밀면 빨간 [지우기]가 드러난다.
+class _CollectionRow extends StatelessWidget {
+  const _CollectionRow({
+    required this.entry,
+    required this.isLifeSong,
+    required this.onRemove,
+    required this.onLongPress,
+  });
+
+  final PlaylistEntry entry;
+  final bool isLifeSong;
+  final VoidCallback onRemove;
+  final VoidCallback onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final track = entry.track;
+    return Dismissible(
+      // 예전에는 순서(index)를 키로 써서, 삭제하면 다른 곡과 키가 겹쳤다.
+      key: ValueKey(entry.docId),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onRemove(),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        decoration:
+            BoxDecoration(color: c.danger, borderRadius: AppRadius.borderL),
+        child: Text('지우기',
+            style:
+                context.textStyles.labelLarge?.copyWith(color: Colors.white)),
+      ),
+      child: TrackResultTile(
+        track: track,
+        badge: isLifeSong ? '인생곡' : null,
+        onLongPress: onLongPress,
+        trailing: IconButton.filled(
+          tooltip: '${track.name} 듣기',
+          onPressed: () => showTrackPlayerSheet(context,
+              title: track.name,
+              artist: track.artistsName,
+              cover: networkImageOrNull(track.imageUrl)),
+          style: IconButton.styleFrom(
+            backgroundColor: c.background,
+            foregroundColor: c.textPrimary,
+            fixedSize: const Size(44, 44),
+          ),
+          icon: const Icon(Icons.play_arrow_rounded, size: 20),
+        ),
+      ),
+    );
+  }
+}
+
+/// "이 곡을 인생곡으로 정할까요?"
+class _LifeSongDialog extends StatelessWidget {
+  const _LifeSongDialog({required this.track});
+
+  final Track track;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.textStyles;
+    return Dialog(
+      backgroundColor: c.surface,
+      surfaceTintColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXxl),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AlbumArt(
+              image: networkImageOrNull(track.imageUrl),
+              size: 96,
+              radius: AppRadius.l,
+              semanticLabel: '${track.name} 앨범 커버',
+            ),
+            const SizedBox(height: 14),
+            Text('인생곡으로 정할까요?', style: t.headlineSmall?.copyWith(fontSize: 20)),
+            const SizedBox(height: AppSpacing.s),
+            Text(
+              '「${track.name}」 · ${track.artistsName}\n프로필과 미니 프로필에 이 곡의 앨범이 보여요.',
+              textAlign: TextAlign.center,
+              style:
+                  t.bodyMedium?.copyWith(fontSize: 14, color: c.textSecondary),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: c.background,
+                      foregroundColor: c.textPrimary,
+                    ),
+                    child: const Text('취소'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50)),
+                    child: const Text('정하기'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
