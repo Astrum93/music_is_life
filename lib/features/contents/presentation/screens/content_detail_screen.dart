@@ -1,293 +1,272 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:marquee/marquee.dart';
-import 'package:music_is_life/core/widgets/box/expanded_box.dart';
-import 'package:music_is_life/core/widgets/box/hash_tag_box.dart';
-import 'package:music_is_life/core/widgets/components/album_art.dart';
-import 'package:music_is_life/core/widgets/subject_container.dart';
-
-import 'package:music_is_life/core/widgets/short_line.dart';
+import 'package:intl/intl.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/theme/app_theme.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
+import 'package:music_is_life/core/widgets/components/components.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/contents/domain/entities/content.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
+import 'package:music_is_life/features/contents/presentation/lounge/lounge_story_page.dart';
+import 'package:music_is_life/features/contents/presentation/story_stats.dart';
+import 'package:music_is_life/features/friends/presentation/widgets/follow_button.dart';
+import 'package:music_is_life/features/music/presentation/widgets/track_player_sheet.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 
-class ContentDetailScreen extends StatefulWidget {
+/// 이야기 상세: 작성자 · SIDE B(노래) · SIDE A(이야기 전문) · 공감
+///
+/// 목록에서 받은 [content]는 열 때의 값이라, 공감 수처럼 바뀌는 값은 컨트롤러의 최신 목록에서 다시 찾는다.
+class ContentDetailScreen extends StatelessWidget {
   const ContentDetailScreen({super.key, required this.content});
 
   final Content content;
 
-  @override
-  State<ContentDetailScreen> createState() => _ContentDetailScreenState();
-}
+  ContentsController get _contents => Get.find<ContentsController>();
 
-class _ContentDetailScreenState extends State<ContentDetailScreen> {
-  ContentsController get _controller => Get.find<ContentsController>();
-
-  Content get _content => widget.content;
-
-  // 해시태그가 3개보다 적은 게시물도 있으므로 빈 문자열로 채운다.
-  late final List<String> _hashTags =
-      [..._content.hashTags, '', '', ''].take(3).toList();
-
-  // 좋아요 상태
-  var isLiked = false;
-
-  // 좋아요 카운트 변수
-  var likecount = 0;
-
-  // 댓글 더보기
-  var showMore = true;
+  Future<void> _toggleResonance(BuildContext context, Content current) async {
+    final result = await _contents.toggleLike(current);
+    if (result case Failed(:final failure) when context.mounted) {
+      showErrorSnackBar(context, failure.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 작성자 정보 (예전에는 게시물 작성자가 아니라 로그인한 사용자를 보여줬다)
-              StreamBuilder<UserProfile?>(
-                stream: _controller.watchAuthor(_content.authorUid),
-                builder: (context, snapshot) {
-                  return snapshot.data != null
-                      ?
-                      // 유저 프로필 사진 및 아이디
-                      Padding(
-                          padding: const EdgeInsets.only(left: 4, right: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  // 유저 프로필 사진
-                                  CircleAvatar(
-                                    backgroundColor: Colors.transparent,
-                                    radius: 15,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Image.network(
-                                        snapshot.data!.profileImageUrl,
-                                        fit: BoxFit.cover,
-                                        alignment: Alignment.center,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-
-                                  // 유저 아이디
-                                  Text(
-                                    snapshot.data!.userName,
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-
-                              // 날짜
-                              Row(
-                                children: [
-                                  Text(
-                                    _content.createdAt
-                                        .toString()
-                                        .substring(0, 10),
-                                    style: const TextStyle(color: Colors.grey),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        )
-                      : const CircularProgressIndicator();
-                },
-              ),
-              const SizedBox(height: 20),
-
-              SubjectContainer(text: _content.title),
-
-              const SizedBox(height: 10),
-
-              // 게시물 이미지: 곡의 앨범 아트. 사진 업로드를 없앤 뒤 새 게시물은 사진 주소가
-              // 비어 있으므로, 곡이 없는 예전 게시물에서만 예전 사진을 보여준다.
-              AlbumArt(
-                image: networkImageOrNull(
-                  _content.track?.imageUrl ?? _content.imageUrl,
-                ),
-                size: MediaQuery.of(context).size.width,
-                radius: 0,
-                semanticLabel: _content.track == null
-                    ? null
-                    : '${_content.track!.name} 앨범 커버',
-              ),
-              const SizedBox(height: 20),
-
-              /// 음악 정보
-              Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(30),
-                    ),
-                    child: Image.network(
-                      (_content.track?.imageUrl ?? ''),
-                      scale: 6,
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          (_content.track?.name ?? '').length > 20
-                              ? SizedBox(
-                                  width: (_content.track?.name ?? '').length *
-                                      11.toDouble(),
-                                  height: 50,
-                                  child: Marquee(
-                                    text: (_content.track?.name ?? ''),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                      color: Colors.white,
-                                    ),
-                                    scrollAxis: Axis.horizontal,
-                                    velocity: 30,
-                                    blankSpace: 40,
-                                  ),
-                                )
-                              : Text(
-                                  (_content.track?.name ?? ''),
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                          (_content.track?.artistsName ?? '').length > 15
-                              ? SizedBox(
-                                  width: (_content.track?.artistsName ?? '')
-                                          .length *
-                                      11.toDouble(),
-                                  height: 50,
-                                  child: Marquee(
-                                    text: (_content.track?.artistsName ?? ''),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    scrollAxis: Axis.horizontal,
-                                    velocity: 30,
-                                    blankSpace: 40,
-                                  ),
-                                )
-                              : Text(
-                                  (_content.track?.artistsName ?? ''),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                        ],
+    return Theme(
+      data: AppTheme.light,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: Builder(
+          builder: (context) => Scaffold(
+            body: SafeArea(
+              child: Obx(() {
+                final all = _contents.allContents.toList();
+                final current =
+                    all.firstWhereOrNull((c) => c.id == content.id) ?? content;
+                final stats = StoryStats(all.isEmpty ? [current] : all);
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                  children: [
+                    _Header(onBack: () => Navigator.of(context).maybePop()),
+                    StreamBuilder<UserProfile?>(
+                      stream: _contents.watchAuthor(current.authorUid),
+                      builder: (context, snapshot) => AuthorHeader(
+                        name: current.authorName,
+                        avatar:
+                            networkImageOrNull(snapshot.data?.track?.imageUrl),
+                        storyIndex: stats.indexOf(current),
+                        dayCount:
+                            stats.dayCountOf(current.authorUid, DateTime.now()),
+                        tier: stats.tierOf(current.authorUid),
+                        trailing: current.authorUid == _contents.uid
+                            ? null
+                            : FollowButton(uid: current.authorUid),
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 15),
-
-              // 콘텐츠 글
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Text(
-                                _content.body,
-                                overflow: showMore
-                                    ? TextOverflow.fade
-                                    : TextOverflow.visible,
-                                maxLines: showMore ? 1 : 100,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 댓글 더 보기 버튼
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            const Text(
-                              "더보기",
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  showMore = showMore == true ? false : true;
-                                });
-                              },
-                              icon: showMore
-                                  ? const Icon(Icons.arrow_drop_down)
-                                  : const Icon(Icons.arrow_drop_up),
-                              color: Colors.grey,
-                            ),
-                          ],
-                        )
-                      ],
+                    const SizedBox(height: AppSpacing.l),
+                    _SongSide(content: current),
+                    const SizedBox(height: AppSpacing.m),
+                    _StorySide(content: current),
+                    const SizedBox(height: AppSpacing.s),
+                    ReactionBar(
+                      resonanceCount: current.likeCount,
+                      resonated: _contents.isLikedByMe(current),
+                      onResonance: () => _toggleResonance(context, current),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 25),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  children: [
-                    HashTagBox(text: _hashTags[0], width: 10, fontSize: 15),
-                    const ExpandedBox(),
-                    HashTagBox(text: _hashTags[1], width: 10, fontSize: 15),
-                    const ExpandedBox(),
-                    HashTagBox(text: _hashTags[2], width: 10, fontSize: 15),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 25),
-              const ShortLine(color: Colors.blue),
-            ],
+                );
+              }),
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.onBack});
+
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: '뒤로 가기',
+            onPressed: onBack,
+            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                size: 20, color: context.colors.textPrimary),
+          ),
+          Expanded(
+            child: Text(
+              '이야기',
+              textAlign: TextAlign.center,
+              style: context.textStyles.titleMedium?.copyWith(fontSize: 16),
+            ),
+          ),
+          const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+}
+
+/// SIDE B · 노래: 앨범과 LP, 곡 정보, [들어보기]
+class _SongSide extends StatelessWidget {
+  const _SongSide({required this.content});
+
+  final Content content;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.textStyles;
+    final track = content.track;
+    // 곡이 없는 예전 게시물만 예전 사진을 보여준다. 새 게시물은 사진 없이 곡 앨범만 쓴다.
+    final cover = networkImageOrNull(track?.imageUrl ?? content.imageUrl);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.l),
+      decoration: BoxDecoration(
+          color: c.inverseSurface, borderRadius: AppRadius.borderXl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SideLabel('SIDE B · 노래', color: c.onInverseSurfaceMuted),
+          const SizedBox(height: AppSpacing.m),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // 앨범 + 오른쪽으로 빠져나온 LP가 카드 폭에 들어가도록 앨범 크기를 정한다.
+              final album = (constraints.maxWidth / 1.4)
+                  .clamp(120.0, 236.0)
+                  .floorToDouble();
+              return track == null
+                  ? AlbumArt(image: cover, size: album, radius: 16)
+                  : AlbumWithRecord(
+                      cover: cover,
+                      size: album,
+                      semanticLabel: '${track.name} 앨범 커버');
+            },
+          ),
+          if (track != null) ...[
+            const SizedBox(height: AppSpacing.l),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(track.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: t.titleLarge
+                              ?.copyWith(color: c.onInverseSurface)),
+                      Text(track.artistsName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: t.bodySmall
+                              ?.copyWith(color: c.onInverseSurfaceMuted)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.m),
+                FilledButton.icon(
+                  onPressed: () => showTrackPlayerSheet(
+                    context,
+                    title: track.name,
+                    artist: track.artistsName,
+                    cover: cover,
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: c.onInverseSurface,
+                    foregroundColor: c.inverseSurface,
+                    minimumSize: const Size(0, 44),
+                    shape: const StadiumBorder(),
+                  ),
+                  icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                  label: const Text('들어보기'),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// SIDE A · 이야기: 제목 · 본문 전체 · 해시태그 · 날짜
+class _StorySide extends StatelessWidget {
+  const _StorySide({required this.content});
+
+  final Content content;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.textStyles;
+    final tags =
+        content.hashTags.where((tag) => tag.trim().isNotEmpty).toList();
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.l + 2),
+      decoration:
+          BoxDecoration(color: c.surface, borderRadius: AppRadius.borderXl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SideLabel('SIDE A · 이야기', color: c.textTertiary),
+          const SizedBox(height: AppSpacing.m),
+          Text(content.title, style: t.headlineSmall),
+          if (content.body.trim().isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.m),
+            SelectableText(content.body,
+                style: t.bodyMedium?.copyWith(height: 1.75)),
+          ],
+          if (tags.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.l),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final tag in tags)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                        color: c.background,
+                        borderRadius: AppRadius.borderFull),
+                    child: Text('#$tag',
+                        style: t.labelMedium?.copyWith(color: c.accentText)),
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: AppSpacing.l),
+          Text(
+            DateFormat('yyyy년 M월 d일').format(content.createdAt),
+            style: t.labelMedium?.copyWith(fontWeight: FontWeight.w400),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SideLabel extends StatelessWidget {
+  const _SideLabel(this.text, {required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(text,
+        style: AppTypography.display(
+            size: 12, weight: FontWeight.w700, color: color));
   }
 }
