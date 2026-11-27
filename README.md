@@ -9,7 +9,7 @@
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white)
-![Version](https://img.shields.io/badge/version-v2.1.1-6C47FF)
+![Version](https://img.shields.io/badge/version-v2.2.0-6C47FF)
 ![Platform](https://img.shields.io/badge/platform-Android%20·%20iOS-3FB950)
 ![Firebase](https://img.shields.io/badge/backend-Firebase-F57C00?logo=firebase&logoColor=white)
 
@@ -55,20 +55,32 @@
 
 ## 화면
 
+사용자가 이동하는 순서대로 놓았어요.
+
 <table>
   <tr>
     <td align="center"><img src="docs/readme/screen-welcome.png" width="240" alt="웰컴 화면"><br><b>웰컴</b><br><sub>당신의 인생곡은 무엇인가요?</sub></td>
+    <td align="center"><img src="docs/readme/screen-login.png" width="240" alt="로그인 화면"><br><b>로그인</b><br><sub>다시 만나서 반가워요</sub></td>
     <td align="center"><img src="docs/readme/screen-home.png" width="240" alt="홈 화면"><br><b>홈</b><br><sub>오늘의 기록 · 지금 공감받는 이야기</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/readme/screen-write.png" width="240" alt="이야기 쓰기 화면"><br><b>이야기 쓰기</b><br><sub>곡 하나 + 짧은 이야기</sub></td>
+    <td align="center"><img src="docs/readme/screen-detail.png" width="240" alt="이야기 상세 화면"><br><b>이야기 상세</b><br><sub>SIDE B 노래 · SIDE A 이야기</sub></td>
     <td align="center"><img src="docs/readme/screen-lounge.png" width="240" alt="라운지 화면"><br><b>라운지</b><br><sub>세로로 넘기는 이야기 피드</sub></td>
   </tr>
   <tr>
     <td align="center"><img src="docs/readme/screen-search.png" width="240" alt="검색 화면"><br><b>검색</b><br><sub>칭호와 인생 스펙트럼</sub></td>
+    <td align="center"><img src="docs/readme/screen-miniprofile.png" width="240" alt="미니 프로필 화면"><br><b>미니 프로필</b><br><sub>인생곡 앨범 · 스펙트럼 · 팔로우</sub></td>
     <td align="center"><img src="docs/readme/screen-messenger.png" width="240" alt="메신저 화면"><br><b>메신저</b><br><sub>친구들의 인생곡</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/readme/screen-chat.png" width="240" alt="채팅방 화면"><br><b>채팅방</b><br><sub>날짜별 대화 · 인생곡 앨범</sub></td>
     <td align="center"><img src="docs/readme/screen-mypage.png" width="240" alt="내 일기장 화면"><br><b>내 일기장</b><br><sub>스펙트럼 · 디스코그래피 · 타임라인</sub></td>
+    <td align="center"><img src="docs/readme/screen-collection.png" width="240" alt="음악 컬렉션 화면"><br><b>음악 컬렉션</b><br><sub>나의 인생곡 · 담아 둔 곡</sub></td>
   </tr>
 </table>
 
-<sub>* 화면 이미지는 실제 앱 화면을 예시 데이터로 그린 것이에요.</sub>
+<sub>* 화면 이미지는 실제 앱 화면을 예시 데이터로 그린 것이에요. 이 밖에 회원가입·곡 고르기·채팅방 만들기·친구 찾기·친구 목록·YouTube에서 찾기 화면이 있어요.</sub>
 
 ## 기록이 쌓이면
 
@@ -94,7 +106,7 @@
 | 분야 | 사용 기술 |
 |---|---|
 | 앱 | Flutter 3.44 · Dart 3.12 · GetX |
-| 백엔드 | Firebase Auth · Cloud Firestore · Storage · Cloud Messaging |
+| 백엔드 | Firebase Auth · Cloud Firestore · Cloud Messaging |
 | 음악 | Spotify Web API (PKCE 로그인) · YouTube 영상 재생 |
 | 디자인 | Pretendard · Bricolage Grotesque · 자체 디자인 토큰 |
 | 테스트 | flutter_test · fake_cloud_firestore |
@@ -119,11 +131,11 @@ README 이미지는 앱의 실제 글꼴과 컴포넌트로 그려요. 화면이
 <!-- DEVLOG:START -->
 | 날짜 | 작업 |
 |---|---|
+| 2026-11-27 | 🚩 v2.2.0: 리디자인 완료와 정리 |
 | 2026-11-25 | 🚩 리디자인: "쌓이는 음악 일기장" 콘셉트로 전 화면 교체 |
 | 2026-11-18 | 🚩 v2.1.0 배포: 클린 아키텍처 전환 완료 |
 | 2026-11-17 | 운영 데이터 uid 전환, 보안 규칙 강화, 인증·프로필·게시물 이전 |
 | 2026-11-17 | iOS 실기기 설치 |
-| 2026-11-17 | 🚩 v2.0.0: Flutter 3.44 업그레이드와 브랜치 전략 도입 |
 
 → [전체 개발 일지 보기](docs/DEVLOG.md)
 <!-- DEVLOG:END -->
