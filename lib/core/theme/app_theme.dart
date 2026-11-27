@@ -154,6 +154,14 @@ abstract final class AppTheme {
                 borderRadius: AppRadius.borderM,
                 borderSide: BorderSide(color: c.textPrimary, width: 1.5),
               ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: AppRadius.borderM,
+                borderSide: BorderSide(color: c.danger, width: 1.2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: AppRadius.borderM,
+                borderSide: BorderSide(color: c.danger, width: 1.5),
+              ),
             )
           : null,
       filledButtonTheme: FilledButtonThemeData(style: primaryButtonStyle),
