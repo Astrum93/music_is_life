@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/features/contents/data/models/content_mapper.dart';
 import 'package:music_is_life/features/contents/data/repositories/firebase_contents_repository.dart';
@@ -46,15 +43,12 @@ void main() {
 
   group('FirebaseContentsRepository', () {
     late FakeFirebaseFirestore firestore;
-    late MockFirebaseStorage storage;
     late FirebaseContentsRepository repository;
 
     setUp(() {
       firestore = FakeFirebaseFirestore();
-      storage = MockFirebaseStorage();
       repository = FirebaseContentsRepository(
         firestore,
-        storage,
         now: () => DateTime(2026, 11, 17, 12),
       );
     });
@@ -88,28 +82,26 @@ void main() {
       expect(contents.map((c) => c.id), ['a2', 'a1']);
     });
 
-    test('create는 자동 ID로 저장하고 이미지를 userContents/{uid}/{id}.png에 올린다', () async {
-      final image = File('${Directory.systemTemp.path}/content_test.png')..writeAsBytesSync([1, 2]);
-
+    test('create는 자동 ID로 저장하고, 사진을 올리지 않아 사진 주소는 빈 문자열이다', () async {
       final result = await repository.create(
         authorUid: 'u1',
         authorName: 'NA',
-        content: NewContent(
+        content: const NewContent(
           title: '  같은 제목  ',
           body: '본문',
-          image: image,
-          hashTags: const [' 태그 ', '', ''],
-          track: const ContentTrack(name: '곡', artistsName: '가수', imageUrl: 'ti'),
+          hashTags: [' 태그 ', '', ''],
+          track: ContentTrack(name: '곡', artistsName: '가수', imageUrl: 'ti'),
         ),
       );
 
       final created = result.valueOrNull!;
       expect(created.title, '같은 제목');
       expect(created.hashTags.first, '태그');
-      expect(storage.storedSettableMetadataMap.keys, contains('userContents/u1/${created.id}.png'));
-      expect(storage.storedSettableMetadataMap['userContents/u1/${created.id}.png']!['contentType'], 'image/png');
+      expect(created.imageUrl, '');
 
       final doc = await firestore.collection('UserContents').doc(created.id).get();
+      expect(doc.data()!['contentsImage'], '');
+      expect(doc.data()!['trackImage'], 'ti');
       expect(doc.data()!['authorUid'], 'u1');
       expect(doc.data()!['name'], 'NA');
       expect(doc.data()!['likedMember'], isEmpty);
@@ -118,12 +110,10 @@ void main() {
     });
 
     test('같은 제목으로 두 번 써도 서로 덮어쓰지 않는다', () async {
-      final image = File('${Directory.systemTemp.path}/content_test2.png')..writeAsBytesSync([1]);
-      final input = NewContent(
+      const input = NewContent(
         title: '같은 제목',
         body: '',
-        image: image,
-        track: const ContentTrack(name: '곡', artistsName: '', imageUrl: ''),
+        track: ContentTrack(name: '곡', artistsName: '', imageUrl: ''),
       );
 
       await repository.create(authorUid: 'u1', authorName: 'NA', content: input);

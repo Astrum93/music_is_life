@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
 import 'package:music_is_life/features/messenger/data/repositories/firebase_messenger_repository.dart';
@@ -9,10 +8,7 @@ import 'package:music_is_life/features/messenger/presentation/messenger_controll
 import 'package:music_is_life/features/profile/domain/repositories/profile_repository.dart';
 
 void _registerRepository() => Get.lazyPut<MessengerRepository>(
-      () => FirebaseMessengerRepository(
-        Get.find<FirebaseFirestore>(),
-        Get.find<FirebaseStorage>(),
-      ),
+      () => FirebaseMessengerRepository(Get.find<FirebaseFirestore>()),
       fenix: true,
     );
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/core/result/result.dart';
@@ -98,11 +97,10 @@ void main() {
   });
 
   test('post는 내 uid·이름으로 올리고, 올리는 중에는 중복 요청을 막는다', () async {
-    final input = NewContent(
+    const input = NewContent(
       title: '제목',
       body: '',
-      image: File('x.png'),
-      track: const ContentTrack(name: '곡', artistsName: '', imageUrl: ''),
+      track: ContentTrack(name: '곡', artistsName: '', imageUrl: ''),
     );
 
     final first = controller.post(input);

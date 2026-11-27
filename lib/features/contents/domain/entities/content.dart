@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'content.freezed.dart';
@@ -17,6 +15,8 @@ abstract class Content with _$Content {
     required String authorName,
     required String title,
     required String body,
+
+    /// 예전 게시물의 사진 주소. 사진 업로드를 없앤 뒤 새 게시물은 빈 문자열이다.
     required String imageUrl,
     required DateTime createdAt,
     @Default(<String>[]) List<String> hashTags,
@@ -42,12 +42,13 @@ abstract class ContentTrack with _$ContentTrack {
 }
 
 /// 새 게시물 입력값
+///
+/// 개인 사진은 올리지 않는다. 게시물의 이미지는 붙인 곡의 앨범 아트([track])뿐이다.
 @freezed
 abstract class NewContent with _$NewContent {
   const factory NewContent({
     required String title,
     required String body,
-    required File image,
     required ContentTrack track,
     @Default(<String>[]) List<String> hashTags,
   }) = _NewContent;

@@ -1,271 +1,246 @@
 import 'package:flutter/material.dart';
-import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
-import 'package:music_is_life/core/widgets/width_height_widget.dart';
-import 'package:music_is_life/features/auth/presentation/session/session_controller.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
+import 'package:music_is_life/core/widgets/components/components.dart';
+import 'package:music_is_life/features/auth/presentation/widgets/logout_dialog.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
+import 'package:music_is_life/features/contents/presentation/story_stats.dart';
+import 'package:music_is_life/features/friends/presentation/add_friends/add_friends_fragment.dart';
+import 'package:music_is_life/features/friends/presentation/favorites/favorites_fragment.dart';
+import 'package:music_is_life/features/friends/presentation/friends_controller.dart';
 import 'package:music_is_life/features/home/presentation/home_controller.dart';
+import 'package:music_is_life/features/music/presentation/screens/playlist_screen.dart';
+import 'package:music_is_life/features/music/presentation/screens/youtube_search_screen.dart';
 
-class HomeDrawer extends StatefulWidget {
+/// 홈 메뉴: 내 인생곡 앨범 · 이름 · 칭호 · 스펙트럼 · 숫자 · 바로가기 · 로그아웃
+class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
 
   @override
-  State<HomeDrawer> createState() => _HomeDrawerState();
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Drawer(
+      width: 304,
+      backgroundColor: c.background,
+      surfaceTintColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(28)),
+      ),
+      child: const SafeArea(child: _DrawerBody()),
+    );
+  }
 }
 
-class _HomeDrawerState extends State<HomeDrawer> {
+class _DrawerBody extends StatelessWidget {
+  const _DrawerBody();
+
+  /// 메뉴를 닫고 [screen]을 연다.
+  void _open(BuildContext context, Widget screen) {
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    navigator.push(MaterialPageRoute(builder: (_) => screen));
+  }
+
   @override
   Widget build(BuildContext context) {
     final home = Get.find<HomeController>();
     final contents = Get.find<ContentsController>();
-    return Obx(() {
-      final me = home.me.value;
-      if (me == null) {
-        return const Drawer(child: Center(child: CircularProgressIndicator()));
-      }
-      final name = me.userName;
-      final profileImage = me.profileImageUrl;
-      return Drawer(
-        backgroundColor: Colors.black.withValues(alpha: 0.9),
-        surfaceTintColor: Colors.black.withValues(alpha: 0.9),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              const Height(30),
-              Row(
-                children: [
-                  Text(
-                    'Welcome\n$name',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const Height(50),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 250,
-                        height: 350,
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(20),
-                          ),
-                        ),
-                      ),
+    final friends = Get.find<FriendsController>();
+    final c = context.colors;
+    final t = context.textStyles;
 
-                      /// Profile Image
-                      Positioned(
-                        top: -20,
-                        left: -20,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.transparent,
-                          radius: 50,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: Image.network(profileImage),
-                          ),
-                        ),
-                      ),
-
-                      /// Profile Name
-                      Positioned(
-                        top: 20,
-                        left: 90,
-                        child: Container(
-                          width: 140,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(alpha: 0.2),
-                                blurRadius: 7,
-                              )
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Obx(() {
+            final me = home.me.value;
+            final mine = [...contents.myContents]
+              ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+            final tier = Tier.fromCount(mine.length);
+            final days = StoryStats(mine).dayCountOf(home.uid, DateTime.now());
+            final resonance = mine.fold<int>(0, (sum, s) => sum + s.likeCount);
+            final followers = friends.relations.value.followers.length;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    AlbumArt(
+                      image: networkImageOrNull(me?.track?.imageUrl),
+                      size: 56,
+                      radius: AppRadius.m + 2,
+                      semanticLabel: me?.track == null ? null : '나의 인생곡 앨범',
+                    ),
+                    const SizedBox(width: AppSpacing.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(me?.userName ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: t.titleLarge),
+                              ),
+                              if (tier != null) ...[
+                                const SizedBox(width: 6),
+                                TierBadge(tier),
+                              ],
                             ],
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.music_note_rounded,
-                                  color: Colors.green,
-                                  size: 25,
-                                ),
-                                const SizedBox(width: 7),
-                                Text(
-                                  name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.fade,
-                                  maxLines: 1,
-                                  softWrap: false,
-                                ),
-                              ],
-                            ),
+                          Text(
+                            [
+                              if (days > 0) formatDayCount(days),
+                              if (me?.track != null) '♪ ${me!.track!.name}',
+                            ].join(' · '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: t.labelMedium
+                                ?.copyWith(fontWeight: FontWeight.w400),
                           ),
-                        ),
+                        ],
                       ),
-
-                      /// 게시글, Liked, Like
-                      Obx(() {
-                        // 내가 쓴 게시물
-                        final collectionDocs = contents.myContents.toList();
-
-                        return Positioned(
-                          top: 90,
-                          left: 10,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 240,
-                            height: 100,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  blurRadius: 7,
-                                )
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // 게시글
-                                  Column(
-                                    children: [
-                                      const Text(
-                                        '게시글',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        collectionDocs.length.toString(),
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(width: 30),
-
-                                  /// 좋아하는 사람
-                                  Column(
-                                    children: [
-                                      const Text(
-                                        'Liked',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        "${collectionDocs.fold<int>(0, (sum, c) => sum + c.likeCount)}",
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 30),
-
-                                  /// 팔로워
-                                  Obx(() {
-                                    final followerCount =
-                                        Get.find<FriendsController>()
-                                            .relations
-                                            .value
-                                            .followers
-                                            .length;
-
-                                    return Column(
-                                      children: [
-                                        const Text(
-                                          '팔로워',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        height10,
-                                        Text(
-                                          "$followerCount",
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-
-                      // 로그아웃 버튼
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: TextButton.icon(
-                            onPressed: () async {
-                              // TODO(ca-home): 홈을 옮길 때 Binding으로 받도록 변경
-                              await Get.find<SessionController>().logout();
-                              Get.offAllNamed(Routes.welcome);
-                            },
-                            style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                minimumSize: const Size(120, 40),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                backgroundColor:
-                                    Colors.grey.withValues(alpha: 0.8)),
-                            icon: const Icon(Icons.logout_rounded),
-                            label: const Text('Logout'),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+                if (mine.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  LifeSpectrum(
+                    colors: [for (final s in mine) spectrumColorOf(s)],
+                    height: 14,
+                    radius: 5,
                   ),
                 ],
-              )
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+                  decoration: BoxDecoration(
+                      color: c.surface, borderRadius: AppRadius.borderL),
+                  child: Row(
+                    children: [
+                      _Stat(label: '이야기', value: mine.length),
+                      _Stat(label: '받은 공감', value: resonance),
+                      _Stat(label: '팔로워', value: followers),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }),
+          const SizedBox(height: 18),
+          _MenuItem(
+            icon: Icons.menu_book_rounded,
+            label: '내 일기장',
+            onTap: () {
+              Navigator.of(context).pop();
+              Get.toNamed(Routes.myPage);
+            },
+          ),
+          _MenuItem(
+            icon: Icons.person_add_alt_rounded,
+            label: '친구 찾기',
+            onTap: () => _open(context, const AddFriendsFragment()),
+          ),
+          _MenuItem(
+            icon: Icons.people_outline_rounded,
+            label: '친구 목록',
+            onTap: () => _open(context, const FavoritesFragment()),
+          ),
+          _MenuItem(
+            icon: Icons.library_music_outlined,
+            label: '음악 컬렉션',
+            onTap: () => _open(context, const MusicCollectionScreen()),
+          ),
+          _MenuItem(
+            icon: Icons.smart_display_outlined,
+            label: 'YouTube에서 찾기',
+            onTap: () => _open(context, const YoutubeSearchScreen()),
+          ),
+          const Spacer(),
+          _MenuItem(
+            icon: Icons.logout_rounded,
+            label: '로그아웃',
+            color: c.danger,
+            showChevron: false,
+            onTap: () => confirmLogout(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Expanded(
+      child: Column(
+        children: [
+          Text(label,
+              style: context.textStyles.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w400, color: c.textSecondary)),
+          const SizedBox(height: 2),
+          Text(formatCount(value),
+              style: AppTypography.display(
+                  size: 18, weight: FontWeight.w800, color: c.textPrimary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _MenuItem extends StatelessWidget {
+  const _MenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+    this.showChevron = true,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+  final bool showChevron;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final fg = color ?? c.textPrimary;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.borderM,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: fg),
+              const SizedBox(width: AppSpacing.m),
+              Expanded(
+                child: Text(label,
+                    style: context.textStyles.titleMedium?.copyWith(color: fg)),
+              ),
+              if (showChevron)
+                Icon(Icons.chevron_right_rounded,
+                    size: 20, color: c.textTertiary),
             ],
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 }

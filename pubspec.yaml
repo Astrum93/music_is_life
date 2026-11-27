@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.1.1+4
+version: 2.2.0+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -36,22 +36,18 @@ dependencies:
   firebase_core: ^5.2.0
   firebase_auth: ^7.1.0
   cloud_firestore: ^7.2.0
-  firebase_storage: ^14.1.0
   firebase_messaging: ^17.1.0
 
   # architecture
   get: ^4.7.3
 
   # ui - widget
-  marquee: ^2.2.3
   modal_progress_hud_nsn: ^0.4.0
-  image_picker: ^1.0.0
   dotted_border: ^2.0.0+3
   youtube_player_flutter: ^10.0.1
   carousel_slider: ^5.1.2
   intl: ^0.18.1
   flutter_animate: ^4.5.0
-  flutter_chat_bubble: ^2.0.2
   flutter_native_splash: ^2.4.0
 
   # network
@@ -88,7 +84,6 @@ dev_dependencies:
   firebase_auth_mocks: ^0.16.0
   fake_cloud_firestore: ^4.5.0
   mock_exceptions: ^0.8.2
-  firebase_storage_mocks: ^0.9.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,49 +97,25 @@ flutter:
   uses-material-design: true
 
   assets:
-
-    # Background
-    - assets/background/WelcomeImage.png
-    - assets/background/background.png
-    - assets/background/universe1.jpg
-    - assets/background/universe2.jpg
-    - assets/background/universe3.jpg
-    - assets/background/universe4.jpg
-    
-    # Icon
-    - assets/icon/dancing.png
-    - assets/icon/davids-head.png
-    - assets/icon/gummy-ipod.png
-    - assets/icon/Login.png
-    - assets/icon/tape-recorder.png
-    - assets/icon/vr-headset.png
-    - assets/icon/3d_casual_life_cloud_music.png
-    - assets/icon/just_be_happy.png
-
-    # Image
-    - assets/image/planet.png
-    - assets/image/pink_planet.png
-
-    # Logo
-    - assets/logo/NAspace.png
-    - assets/logo/something.png
-    - assets/logo/music_is_life.png
-    - assets/logo/music_is_life_logo.png
-    - assets/logo/spotify_logo.png
-
-
-    # profile
-    - assets/profile/pikachu.png
-    - assets/profile/homer.gif
-    - assets/profile/metamong.gif
-    - assets/profile/fire_dog.gif
-    - assets/profile/fire_cat.gif
-
-    # Thumb
-    - assets/thumb/Thumb_Test.jpeg
-
     # Config
     - assets/config/.env
+
+  # 디자인 토큰 글꼴 (lib/core/theme/tokens/app_typography.dart), 둘 다 SIL OFL 1.1
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
+        - asset: assets/fonts/Pretendard-ExtraBold.otf
+          weight: 800
+    # 가변 글꼴: 굵기는 AppTypography.display의 fontVariations로 고른다
+    - family: BricolageGrotesque
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Variable.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

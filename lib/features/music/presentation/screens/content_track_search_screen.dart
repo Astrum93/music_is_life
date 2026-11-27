@@ -1,274 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:marquee/marquee.dart';
-import 'package:music_is_life/core/constant/app_colors.dart';
-import 'package:music_is_life/core/constant/constants.dart';
-import 'package:music_is_life/core/widgets/button/check_button.dart';
-import 'package:music_is_life/core/widgets/scaffold/custom_snackbar.dart';
-import 'package:music_is_life/core/widgets/width_height_widget.dart';
+import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
+import 'package:music_is_life/features/music/domain/entities/track.dart';
 import 'package:music_is_life/features/music/presentation/music_controller.dart';
-import 'package:music_is_life/features/music/presentation/widgets/spotify_connect_prompt.dart';
-import 'package:music_is_life/features/music/presentation/widgets/track_search_app_bar.dart';
+import 'package:music_is_life/features/music/presentation/widgets/spotify_track_search.dart';
 
-class ContentTrackSearchScreen extends StatefulWidget {
+/// 곡 고르기: 이야기에 붙일 곡을 Spotify에서 찾아 고른다. (이야기 하나에 한 곡)
+///
+/// [고르기]를 누르면 곡을 정하고 바로 이야기 쓰기로 돌아간다.
+class ContentTrackSearchScreen extends StatelessWidget {
   const ContentTrackSearchScreen({super.key});
 
   @override
-  State<ContentTrackSearchScreen> createState() =>
-      _ContentTrackSearchScreenState();
-}
-
-/// 게시물에 붙일 곡을 Spotify에서 검색해 고른다. (게시물당 한 곡)
-class _ContentTrackSearchScreenState extends State<ContentTrackSearchScreen> {
-  final TextEditingController controller = TextEditingController();
-
-  MusicController get _music => Get.find<MusicController>();
-
-  @override
-  void initState() {
-    super.initState();
-    _music
-      ..clearSearch()
-      ..refreshConnection();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: TrackSearchAppBar(controller: controller),
-        body: Obx(
-          () => !_music.isSpotifyConnected.value
-              ? const Center(child: SpotifyConnectPrompt())
-              : _music.searchResults.isEmpty
-                  ? const Center(
-                      child: Text(
-                        '스포티파이를 사용하는 검색입니다. \n되도록 영어로 써주세요!',
-                        style: TextStyle(color: Colors.redAccent),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _music.searchResults.length,
-                      itemBuilder: (context, index) {
-                        final track = _music.searchResults[index];
-                        final trackImage = track.imageUrl.isEmpty
-                            ? baseProfileImage
-                            : track.imageUrl;
-                        final trackName = track.name;
-                        final artistsName = track.artistsName;
-                        return Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => Dialog(
-                                    child: Container(
-                                      width: 100,
-                                      height: 150,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.veryDarkGrey,
-                                      ),
-                                      child: Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          const Positioned(
-                                            top: 40,
-                                            left: 0,
-                                            right: 0,
-                                            child: Text(
-                                                '해당 음악 정보를 \n게시물에 추가하시겠습니까?',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                ),
-                                                textAlign: TextAlign.center),
-                                          ),
+    void pick(Track track) {
+      final music = Get.find<MusicController>();
+      final result = music.pickForContent(track);
+      if (result case Failed(:final failure)) {
+        showErrorSnackBar(context, failure.message);
+        return;
+      }
+      music.clearSearch();
+      Navigator.of(context).pop();
+    }
 
-                                          /// 추가 버튼
-                                          Positioned(
-                                            right: 30,
-                                            bottom: 10,
-                                            child: CheckButton(
-                                              width: 40,
-                                              height: 40,
-                                              boxColor: AppColors.veryDarkGrey,
-                                              borderColor: Colors.greenAccent,
-                                              icon: Icons.check,
-                                              iconColor: Colors.greenAccent,
-                                              onTap: () {
-                                                final picked = _music
-                                                    .pickForContent(track);
-                                                if (picked.isFailed) {
-                                                  CustomSnackBar
-                                                      .buildTopRoundedSnackBar(
-                                                    context,
-                                                    '게시물당 한 곡만 가능합니다.',
-                                                    Colors.redAccent,
-                                                    Colors.black,
-                                                    3,
-                                                  );
-                                                  Navigator.pop(context);
-                                                } else {
-                                                  CustomSnackBar
-                                                      .buildTopRoundedSnackBar(
-                                                    context,
-                                                    '추가가 완료되었습니다.',
-                                                    Colors.greenAccent,
-                                                    Colors.black,
-                                                    3,
-                                                  );
-                                                  Navigator.pop(context);
-                                                }
-                                              },
-                                            ),
-                                          ),
-
-                                          /// 취소 버튼
-                                          Positioned(
-                                            left: 30,
-                                            bottom: 10,
-                                            child: CheckButton(
-                                              width: 40,
-                                              height: 40,
-                                              boxColor: AppColors.veryDarkGrey,
-                                              borderColor: Colors.redAccent,
-                                              icon: Icons.clear,
-                                              iconColor: Colors.redAccent,
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                          ),
-
-                                          /// info Icon
-                                          const Positioned(
-                                            top: -30,
-                                            left: 0,
-                                            right: 0,
-                                            child: CheckButton(
-                                              width: 40,
-                                              height: 40,
-                                              borderColor: Colors.transparent,
-                                              icon: Icons.info_outline_rounded,
-                                              iconColor: Colors.yellowAccent,
-                                              iconSize: 40,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                width: MediaQuery.of(context).size.width - 10,
-                                height: 150,
-                                decoration: const BoxDecoration(
-                                  color: Colors.transparent,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.all(
-                                        Radius.circular(30),
-                                      ),
-                                      child: Image.network(trackImage),
-                                    ),
-                                    width30,
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(left: 8),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            trackName.length > 20
-                                                ? SizedBox(
-                                                    width: trackName.length *
-                                                        11.toDouble(),
-                                                    height: 50,
-                                                    child: Marquee(
-                                                      text: trackName,
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 20,
-                                                        color: Colors.white,
-                                                      ),
-                                                      scrollAxis:
-                                                          Axis.horizontal,
-                                                      velocity: 30,
-                                                      blankSpace: 40,
-                                                    ),
-                                                  )
-                                                : Text(
-                                                    trackName,
-                                                    style: const TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.white,
-                                                    ),
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                            artistsName.length > 15
-                                                ? SizedBox(
-                                                    width: artistsName.length *
-                                                        11.toDouble(),
-                                                    height: 50,
-                                                    child: Marquee(
-                                                      text: artistsName,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15,
-                                                        color: Colors
-                                                            .grey.shade600,
-                                                      ),
-                                                      scrollAxis:
-                                                          Axis.horizontal,
-                                                      velocity: 30,
-                                                      blankSpace: 40,
-                                                    ),
-                                                  )
-                                                : Text(
-                                                    artistsName,
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color:
-                                                          Colors.grey.shade600,
-                                                    ),
-                                                  ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            height10,
-                          ],
-                        );
-                      },
-                    ),
-        ),
-      ),
+    return SpotifyTrackSearchPage(
+      title: '곡 고르기',
+      resultNote: '이야기 하나에 한 곡',
+      onTapTrack: pick,
+      trailingOf: (track) =>
+          SmallPillButton(label: '고르기', onPressed: () => pick(track)),
     );
   }
 }

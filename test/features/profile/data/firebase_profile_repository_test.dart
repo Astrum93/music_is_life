@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/core/constant/constants.dart';
 import 'package:music_is_life/features/profile/data/models/user_profile_mapper.dart';
@@ -54,17 +51,11 @@ void main() {
 
   group('FirebaseProfileRepository', () {
     late FakeFirebaseFirestore firestore;
-    late MockFirebaseStorage storage;
     late FirebaseProfileRepository repository;
 
     setUp(() async {
       firestore = FakeFirebaseFirestore();
-      storage = MockFirebaseStorage();
-      repository = FirebaseProfileRepository(
-        firestore,
-        storage,
-        now: () => DateTime.fromMillisecondsSinceEpoch(1700000000000),
-      );
+      repository = FirebaseProfileRepository(firestore);
       await firestore.collection('UserInfo').doc(uid).set({
         'uid': uid,
         'userName': 'test',
@@ -91,28 +82,6 @@ void main() {
       expect(result.isSuccess, isTrue);
       final doc = await firestore.collection('UserInfo').doc(uid).get();
       expect(doc.data()!['userProfileInfo'], '새 소개');
-    });
-
-    test('updateProfileImage는 규칙에 맞는 경로에 image 형식으로 올리고 URL을 저장한다', () async {
-      final file = File('${Directory.systemTemp.path}/profile_test.jpg')..writeAsBytesSync([1, 2, 3]);
-
-      final result = await repository.updateProfileImage(uid, file);
-
-      expect(result.isSuccess, isTrue);
-      const path = 'userProfileImage/u1_profile_1700000000000.png';
-      expect(storage.storedSettableMetadataMap.keys, contains(path));
-      expect(storage.storedSettableMetadataMap[path]!['contentType'], 'image/jpeg');
-      final doc = await firestore.collection('UserInfo').doc(uid).get();
-      expect(doc.data()!['userProfileImage'], endsWith('/$path'));
-    });
-
-    test('updateBackgroundImage는 userProfileBG/{uid}_profileBG_* 경로를 쓴다', () async {
-      final file = File('${Directory.systemTemp.path}/bg_test.png')..writeAsBytesSync([1]);
-
-      await repository.updateBackgroundImage(uid, file);
-
-      final doc = await firestore.collection('UserInfo').doc(uid).get();
-      expect(doc.data()!['userProfileBgImage'], endsWith('/userProfileBG/u1_profileBG_1700000000000.png'));
     });
 
     test('updateTrack은 대표곡 필드 4개를 저장한다', () async {

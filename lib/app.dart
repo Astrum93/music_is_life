@@ -15,7 +15,7 @@ class MusicIsLifeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       initialBinding: InitialBinding(),
       initialRoute: initialRoute,
       getPages: AppPages.pages,

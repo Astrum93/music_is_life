@@ -94,6 +94,9 @@ class MusicController extends GetxController {
   Future<Result<void>> removeFromPlaylist(PlaylistEntry entry) =>
       _playlist.remove(uid, entry.docId);
 
+  /// 내 프로필 (음악 컬렉션 맨 위의 "나의 인생곡" 카드)
+  Stream<UserProfile?> watchMyProfile() => _profile.watchProfile(uid);
+
   /// 마이페이지 대표곡으로 설정한다.
   Future<Result<void>> setProfileTrack(Track track) => _profile.updateTrack(
         uid,

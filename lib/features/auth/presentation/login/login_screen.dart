@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:music_is_life/core/constant/app_colors.dart';
-import 'package:music_is_life/core/constant/constants.dart';
 import 'package:music_is_life/core/result/result.dart';
 import 'package:music_is_life/core/router/app_routes.dart';
-import 'package:music_is_life/core/widgets/button/check_button.dart';
-import 'package:music_is_life/core/widgets/easy_text_form_field.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
 import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/auth/presentation/login/login_controller.dart';
+import 'package:music_is_life/features/auth/presentation/widgets/auth_page.dart';
 
+/// 로그인: 다시 만나서 반가워요 · 이메일 · 비밀번호 · [로그인] · 시작하기로 가기
 class LogInScreen extends StatefulWidget {
   const LogInScreen({super.key});
 
@@ -19,13 +17,19 @@ class LogInScreen extends StatefulWidget {
 
 class _LogInScreenState extends State<LogInScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _passwordFocus = FocusNode();
+  var _obscure = true;
+
+  // 처음에는 입력 중에 오류를 띄우지 않고, 한 번 제출한 뒤부터 바로바로 알려준다.
+  var _autovalidate = AutovalidateMode.disabled;
 
   LoginController get _controller => Get.find<LoginController>();
 
   Future<void> _submit() async {
+    if (_controller.isLoading.value) return;
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
-      showErrorSnackBar(context, '정보를 올바르게 입력해 주세요.');
+      setState(() => _autovalidate = AutovalidateMode.onUserInteraction);
       return;
     }
     _formKey.currentState!.save();
@@ -42,121 +46,67 @@ class _LogInScreenState extends State<LogInScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-      ),
-
-      // 입력 제외 부분 Tap하면 키보드 사라지게
-      body: Obx(
-        () => ModalProgressHUD(
-          inAsyncCall: _controller.isLoading.value,
-          child: GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 로그인 메인 이미지
-                  const Center(
-                    child: Image(
-                      image: AssetImage('$basePath/icon/Login.png'),
-                    ),
-                  ),
-                  const SizedBox(height: 50),
-
-                  // 메인 컨테이너
-                  Container(
-                    decoration: const BoxDecoration(color: Colors.black),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            const _FieldLabel('이메일'),
-                            const SizedBox(height: 15),
-
-                            // 아이디 입력
-                            EasyTextFormField(
-                              key: const ValueKey(1),
-                              keyboardType: TextInputType.emailAddress,
-                              obscureText: false,
-                              validator: (value) =>
-                                  _controller.validateEmail(value as String?),
-                              onSaved: (value) => _controller.email = value!,
-                              onChanged: (value) => _controller.email = value,
-                              prefixIcon: const Icon(
-                                Icons.mail,
-                                color: Colors.grey,
-                              ),
-                              hintText: "메일 주소",
-                            ),
-                            const SizedBox(height: 15),
-
-                            const _FieldLabel('비밀번호'),
-                            const SizedBox(height: 15),
-
-                            // 비밀번호 입력
-                            EasyTextFormField(
-                              key: const ValueKey(2),
-                              keyboardType: TextInputType.text,
-                              obscureText: true,
-                              validator: (value) =>
-                                  _controller.validatePassword(value as String?),
-                              onSaved: (value) => _controller.password = value!,
-                              onChanged: (value) => _controller.password = value,
-                              prefixIcon: const Icon(
-                                Icons.lock_outline_rounded,
-                                color: Colors.grey,
-                              ),
-                              hintText: "비밀번호",
-                            ),
-                            const SizedBox(height: 35),
-
-                            // 체크 버튼
-                            CheckButton(
-                              width: 40,
-                              height: 40,
-                              boxColor: AppColors.veryDarkGrey,
-                              borderColor: Colors.transparent,
-                              icon: Icons.check,
-                              iconColor: Colors.green,
-                              onTap: _submit,
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void dispose() {
+    _passwordFocus.dispose();
+    super.dispose();
   }
-}
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-
-  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return AuthPage(
+      title: '다시 만나서\n반가워요',
+      subtitle: '오늘의 인생곡을 이어서 기록해 보세요.',
       children: [
-        Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+        Form(
+          key: _formKey,
+          autovalidateMode: _autovalidate,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const AuthFieldLabel('이메일'),
+              TextFormField(
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
+                autocorrect: false,
+                validator: _controller.validateEmail,
+                onSaved: (value) => _controller.email = value!.trim(),
+                onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
+                decoration: const InputDecoration(hintText: 'name@example.com'),
+              ),
+              const SizedBox(height: AppSpacing.l),
+              const AuthFieldLabel('비밀번호'),
+              TextFormField(
+                focusNode: _passwordFocus,
+                obscureText: _obscure,
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.password],
+                validator: _controller.validatePassword,
+                onSaved: (value) => _controller.password = value!,
+                onFieldSubmitted: (_) => _submit(),
+                decoration: InputDecoration(
+                  hintText: '6자리 이상',
+                  suffixIcon: PasswordVisibilityButton(
+                    obscured: _obscure,
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+              ),
+            ],
           ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        Obx(() => AuthSubmitButton(
+              label: '로그인',
+              loading: _controller.isLoading.value,
+              onPressed: _submit,
+            )),
+        const SizedBox(height: AppSpacing.m),
+        AuthSwitchLink(
+          question: '아직 계정이 없나요?',
+          action: '시작하기',
+          // 로그인 화면을 시작하기(회원가입)로 바꾼다. 뒤로 가면 웰컴으로 돌아간다.
+          onPressed: () => Get.offNamed(Routes.join),
         ),
       ],
     );
