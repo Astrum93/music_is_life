@@ -7,12 +7,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/painting.dart';
 import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/features/auth/domain/repositories/auth_repository.dart';
 import 'package:music_is_life/features/contents/domain/entities/content.dart';
 import 'package:music_is_life/features/contents/domain/repositories/contents_repository.dart';
 import 'package:music_is_life/features/friends/domain/entities/friend_relations.dart';
 import 'package:music_is_life/features/friends/domain/repositories/friends_repository.dart';
 import 'package:music_is_life/features/messenger/domain/entities/chat.dart';
 import 'package:music_is_life/features/messenger/domain/repositories/messenger_repository.dart';
+import 'package:music_is_life/features/music/domain/entities/track.dart';
+import 'package:music_is_life/features/music/domain/repositories/music_repositories.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 import 'package:music_is_life/features/profile/domain/repositories/profile_repository.dart';
 
@@ -145,7 +148,10 @@ Content _story(String author, int n, DateTime at,
     imageUrl: '',
     createdAt: at,
     likedBy: List.generate(likes, (i) => 'u$i'),
-    track: ContentTrack(name: s.$1, artistsName: s.$2, imageUrl: song >= 0 ? s.$3 : '${s.$3}?n=$author-$n'),
+    track: ContentTrack(
+        name: s.$1,
+        artistsName: s.$2,
+        imageUrl: song >= 0 ? s.$3 : '${s.$3}?n=$author-$n'),
   );
 }
 
@@ -304,6 +310,29 @@ class FakeFriendsRepository implements FriendsRepository {
 }
 
 class FakeMessengerRepository implements MessengerRepository {
+  /// 채팅방 화면 예시 대화 (최신순)
+  @override
+  Stream<List<ChatMessage>> watchMessages(String roomId) {
+    final today = DateTime.now();
+    DateTime at(int daysAgo, int h, int m) =>
+        DateTime(today.year, today.month, today.day - daysAgo, h, m);
+    ChatMessage msg(
+            String id, String uid, String name, String text, DateTime t) =>
+        ChatMessage(
+            id: id, senderUid: uid, senderName: name, text: text, sentAt: t);
+    return Stream.value([
+      msg('8', me, '정민', '오늘 밤에 또 틀어야겠다', at(0, 21, 9)),
+      msg('7', me, '정민', '맞아 그 노래 진짜 위로돼. 나도 작년 겨울에 그 곡으로 버텼어', at(0, 21, 8)),
+      msg('6', 'haneul.forest', 'haneul.forest', '나도 방금 들었는데 가사가 딱 그때 얘기 같더라',
+          at(0, 21, 7)),
+      msg('5', 'night_neon', 'night_neon', '어제 올린 이야기 봤어? 「도시의 불빛」',
+          at(0, 21, 6)),
+      msg('4', 'night_neon', 'night_neon', '새벽에 강변 달리면서 듣던 노래야', at(0, 21, 6)),
+      msg('3', me, '정민', '응 잘 자!', at(1, 23, 40)),
+      msg('2', 'morae_al', 'morae_al', '먼저 잘게~ 내일 또 얘기해', at(1, 23, 38)),
+    ]);
+  }
+
   @override
   Stream<List<ChatRoom>> watchRooms(String uid) => Stream.value(const [
         ChatRoom(id: 'r1', name: '새벽 감성 모임', memberUids: [
@@ -409,6 +438,46 @@ class _CoverResponse extends Stream<List<int>> implements HttpClientResponse {
       Stream<List<int>>.value(bytes).listen(onData,
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// 음악 컬렉션 화면용: Spotify는 연결된 것으로 보고, 담아 둔 곡 목록을 돌려준다.
+class FakeSpotifyRepository
+    implements SpotifyAccountRepository, TrackSearchRepository {
+  @override
+  Future<bool> isConnected() async => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class FakePlaylistRepository implements PlaylistRepository {
+  @override
+  Stream<List<PlaylistEntry>> watch(String uid) => Stream.value([
+        for (final (i, (name, artist, cover)) in _songs.indexed)
+          PlaylistEntry(
+            docId: 'p$i',
+            // 내 인생곡(빈 방)은 프로필 곡 ID와 같게 둔다.
+            track: Track(
+                id: name == '빈 방' ? 't-me' : 'p$i',
+                name: name,
+                artistsName: artist,
+                imageUrl: cover),
+            addedAt: DateTime(2026, 11, 1),
+          ),
+      ]);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class UnusedMusicRepository implements PlaybackRepository, YoutubeRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class UnusedAuthRepository implements AuthRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

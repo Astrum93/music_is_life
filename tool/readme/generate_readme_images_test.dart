@@ -4,7 +4,7 @@
 // 결과: docs/readme/*.png (README.md가 이 이미지들을 쓴다)
 //
 // 앱의 실제 글꼴(Pretendard, Bricolage Grotesque)과 컴포넌트로 배너·개념 카드·디자인 견본·
-// 칭호 배지를 그리고, 화면 6장은 실제 앱 화면을 예시 데이터(readme_fixtures.dart)로 렌더링한다.
+// 칭호 배지를 그리고, 화면 12장은 실제 앱 화면을 예시 데이터(readme_fixtures.dart)로 렌더링한다.
 // test/ 밖에 두어서 일반 `flutter test`에는 포함되지 않는다.
 import 'dart:ui' as ui;
 
@@ -15,6 +15,16 @@ import 'package:get/get.dart';
 import 'package:music_is_life/core/theme/app_theme.dart';
 import 'package:music_is_life/core/theme/tokens/tokens.dart';
 import 'package:music_is_life/core/widgets/components/components.dart';
+import 'package:music_is_life/features/auth/presentation/login/login_controller.dart';
+import 'package:music_is_life/features/auth/presentation/login/login_screen.dart';
+import 'package:music_is_life/features/contents/presentation/screens/content_detail_screen.dart';
+import 'package:music_is_life/features/contents/presentation/screens/create_content_screen.dart';
+import 'package:music_is_life/features/messenger/domain/entities/chat.dart';
+import 'package:music_is_life/features/messenger/presentation/screen/chat_bubble_screen.dart';
+import 'package:music_is_life/features/music/domain/entities/track.dart';
+import 'package:music_is_life/features/music/presentation/music_controller.dart';
+import 'package:music_is_life/features/music/presentation/screens/playlist_screen.dart';
+import 'package:music_is_life/features/profile/presentation/widgets/mini_profile_sheet.dart';
 import 'package:music_is_life/features/auth/presentation/welcome/welcome_screen.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
 import 'package:music_is_life/features/contents/presentation/lounge/lounge_fragment.dart';
@@ -109,6 +119,18 @@ void main() {
     Get.put(MessengerController(FakeMessengerRepository(), profileRepository,
         uid: me, userName: '정민'));
     Get.put(AppSearchController(profileRepository, contents));
+    final spotify = FakeSpotifyRepository();
+    final unused = UnusedMusicRepository();
+    Get.put(MusicController(
+      account: spotify,
+      search: spotify,
+      playlist: FakePlaylistRepository(),
+      playback: unused,
+      youtube: unused,
+      profile: profileRepository,
+      uid: me,
+    ));
+    Get.put(LoginController(UnusedAuthRepository()));
   }
 
   group('README 배너·카드', () {
@@ -153,13 +175,32 @@ void main() {
   });
 
   group('README 화면', () {
+    // 공감을 가장 많이 받은 night_neon의 이야기 (이야기 상세 화면용)
+    final featured = stories.firstWhere((c) => c.authorUid == 'night_neon');
+    const room = ChatRoom(
+      id: 'r1',
+      name: '새벽 감성 모임',
+      memberUids: [me, 'night_neon', 'haneul.forest', 'morae_al'],
+      memberNames: {
+        me: '정민',
+        'night_neon': 'night_neon',
+        'haneul.forest': 'haneul.forest',
+        'morae_al': 'morae_al',
+      },
+    );
     final screens = <String, Widget>{
       'welcome': const WelcomeScreen(),
+      'login': const LogInScreen(),
       'home': const HomeScreen(),
+      'write': const CreateContentScreen(),
+      'detail': ContentDetailScreen(content: featured),
       'lounge': const LoungeFragment(),
       'search': const SearchFragment(),
+      'miniprofile': const _MiniProfilePreview(),
       'messenger': const MessengerFragment(),
+      'chat': const ChatBubbleScreen(room: room),
       'mypage': const MyScreen(),
+      'collection': const MusicCollectionScreen(),
     };
     screens.forEach((name, screen) {
       testWidgets('screen-$name.png', (tester) async {
@@ -169,17 +210,64 @@ void main() {
           name: 'screen-$name.png',
           size: const Size(410, 864),
           child: _PhoneFrame(child: screen),
-          before: name == 'search'
-              ? () async {
-                  await tester.pump();
-                  await tester.enterText(find.byType(TextField), 'a');
-                  await tester.pump();
-                }
-              : null,
+          before: switch (name) {
+            'search' => () async {
+                await tester.pump();
+                await tester.enterText(find.byType(TextField), 'a');
+                await tester.pump();
+              },
+            'write' => () async {
+                await tester.pump();
+                Get.find<MusicController>().pickForContent(const Track(
+                    id: 'w1',
+                    name: '도시의 불빛',
+                    artistsName: '네온 라디오',
+                    imageUrl: Covers.dawn));
+                final fields = find.byType(TextField);
+                await tester.enterText(
+                    fields.at(0), '새벽, 무작정 강변을 달렸다');
+                await tester.enterText(fields.at(1),
+                    '창문을 조금 내리고 이 노래를 틀었을 때 그제야 숨이 쉬어졌다.\n요즘 잠 못 드는 사람들한테 꼭 들려주고 싶은 곡.');
+                await tester.enterText(fields.at(2), '#새벽 #위로');
+                FocusManager.instance.primaryFocus?.unfocus();
+                await tester.pump();
+              },
+            'login' => () async {
+                await tester.pump();
+                await tester.enterText(
+                    find.byType(TextFormField).at(0), 'jungmin@example.com');
+                FocusManager.instance.primaryFocus?.unfocus();
+                await tester.pump();
+              },
+            _ => null,
+          },
         );
       });
     });
   });
+}
+
+/// 미니 프로필: 검색 화면 위로 올라온 바텀시트처럼 그린다.
+class _MiniProfilePreview extends StatelessWidget {
+  const _MiniProfilePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const SearchFragment(),
+        const ColoredBox(color: Color(0x73111111)),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Theme(
+            data: AppTheme.light,
+            child: MiniProfileSheet(profile: profiles['night_neon']!),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// 휴대폰 테두리: 화면을 390x844로 그리고 상단 안전 영역(44)을 비워 둔다.
