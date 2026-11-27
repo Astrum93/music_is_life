@@ -1,21 +1,15 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:music_is_life/core/error/failure.dart';
 import 'package:music_is_life/core/result/result.dart';
-import 'package:music_is_life/core/utils/image_upload_metadata.dart';
 import 'package:music_is_life/features/messenger/data/models/chat_mapper.dart';
 import 'package:music_is_life/features/messenger/domain/entities/chat.dart';
 import 'package:music_is_life/features/messenger/domain/repositories/messenger_repository.dart';
 
 class FirebaseMessengerRepository implements MessengerRepository {
-  FirebaseMessengerRepository(this._firestore, this._storage,
-      {DateTime Function()? now})
+  FirebaseMessengerRepository(this._firestore, {DateTime Function()? now})
       : _now = now ?? DateTime.now;
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
   final DateTime Function() _now;
 
   CollectionReference<Map<String, dynamic>> get _rooms =>
@@ -68,23 +62,8 @@ class FirebaseMessengerRepository implements MessengerRepository {
   }
 
   @override
-  Future<Result<String>> uploadRoomImage(File image) async {
-    try {
-      final ref = _storage
-          .ref('userChatImage/${_now().millisecondsSinceEpoch}_chatImage.png');
-      await ref.putFile(image, imageUploadMetadata(image));
-      return Success(await ref.getDownloadURL());
-    } on FirebaseException catch (e) {
-      return Failed(ServerFailure('사진을 올리지 못했습니다.', code: e.code));
-    } catch (e) {
-      return Failed(UnknownFailure('사진을 올리지 못했습니다.', e));
-    }
-  }
-
-  @override
   Future<Result<ChatRoom>> createRoom({
     required String name,
-    required String imageUrl,
     required Map<String, String> members,
     required String managerEmail,
   }) async {
@@ -97,7 +76,8 @@ class FirebaseMessengerRepository implements MessengerRepository {
       final doc = _rooms.doc();
       await doc.set({
         'chatName': name.trim(),
-        'chatImage': imageUrl,
+        // 개인 사진은 올리지 않는다. 예전 채팅방과 형식을 맞추려고 필드는 빈 문자열로 남긴다.
+        'chatImage': '',
         'manager': managerEmail,
         'member': members.keys.toList(),
         'memberNames': members,
@@ -107,7 +87,6 @@ class FirebaseMessengerRepository implements MessengerRepository {
       return Success(ChatRoom(
         id: doc.id,
         name: name.trim(),
-        imageUrl: imageUrl,
         memberUids: members.keys.toList(),
         memberNames: members,
       ));

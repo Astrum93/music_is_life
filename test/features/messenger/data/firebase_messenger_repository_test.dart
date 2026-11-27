@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/core/error/failure.dart';
 import 'package:music_is_life/core/result/result.dart';
@@ -11,15 +8,12 @@ import 'package:music_is_life/features/messenger/data/repositories/firebase_mess
 
 void main() {
   late FakeFirebaseFirestore firestore;
-  late MockFirebaseStorage storage;
   late FirebaseMessengerRepository repository;
 
   setUp(() {
     firestore = FakeFirebaseFirestore();
-    storage = MockFirebaseStorage();
     repository = FirebaseMessengerRepository(
       firestore,
-      storage,
       now: () => DateTime(2026, 11, 17, 9, 30),
     );
   });
@@ -89,10 +83,9 @@ void main() {
     expect(result.map((m) => m.text), ['new', 'old']);
   });
 
-  test('createRoom은 자동 ID로 만들고 멤버 uid와 이름을 함께 저장한다', () async {
+  test('createRoom은 자동 ID로 만들고 멤버 uid와 이름을 함께 저장한다 (사진은 빈 문자열)', () async {
     final result = await repository.createRoom(
       name: ' 같은 이름 ',
-      imageUrl: 'img',
       members: {'me': '나', 'you': '너'},
       managerEmail: 'me@example.com',
     );
@@ -100,6 +93,7 @@ void main() {
     final room = result.valueOrNull!;
     final doc = await firestore.collection('UserChats').doc(room.id).get();
     expect(doc.data()!['chatName'], '같은 이름');
+    expect(doc.data()!['chatImage'], '');
     expect(doc.data()!['member'], ['me', 'you']);
     expect(doc.data()!['memberNames'], {'me': '나', 'you': '너'});
     expect(doc.data()!['likedMember'], isEmpty);
@@ -108,23 +102,12 @@ void main() {
   test('이름이 비어 있으면 채팅방을 만들지 않는다', () async {
     final result = await repository.createRoom(
       name: '  ',
-      imageUrl: '',
       members: {'me': '나'},
       managerEmail: '',
     );
 
     expect(result.isFailed, isTrue);
     expect((await firestore.collection('UserChats').get()).docs, isEmpty);
-  });
-
-  test('uploadRoomImage는 userChatImage/에 image 형식으로 올리고 URL을 돌려준다', () async {
-    final file = File('${Directory.systemTemp.path}/chat_test.jpg')..writeAsBytesSync([1]);
-
-    final result = await repository.uploadRoomImage(file);
-
-    expect(result.valueOrNull, contains('userChatImage/'));
-    final meta = storage.storedSettableMetadataMap.values.single;
-    expect(meta['contentType'], 'image/jpeg');
   });
 
   test('setRoomLiked는 내 uid를 넣고 뺀다', () async {

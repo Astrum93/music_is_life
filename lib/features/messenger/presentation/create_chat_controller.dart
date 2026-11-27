@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:get/get.dart';
 import 'package:music_is_life/core/error/failure.dart';
 import 'package:music_is_life/core/result/result.dart';
@@ -23,12 +21,10 @@ class CreateChatController extends GetxController {
   final String email;
 
   final name = ''.obs;
-  final imageUrl = ''.obs;
 
   /// 멤버 uid -> 이름
   final members = <String, String>{}.obs;
 
-  final isUploading = false.obs;
   final isCreating = false.obs;
 
   @override
@@ -48,21 +44,14 @@ class CreateChatController extends GetxController {
     }
   }
 
-  Future<Result<void>> uploadImage(File image) async {
-    isUploading.value = true;
-    try {
-      final result = await _repository.uploadRoomImage(image);
-      if (result case Success(:final value)) imageUrl.value = value;
-      return result;
-    } finally {
-      isUploading.value = false;
-    }
-  }
-
   Future<Result<ChatRoom>> create() async {
     if (name.value.trim().isEmpty) {
       return const Failed(
           InvalidRequestFailure('채팅방 이름을 입력해 주세요.', code: 'no-name'));
+    }
+    if (members.length < 2) {
+      return const Failed(
+          InvalidRequestFailure('함께할 친구를 한 명 이상 골라주세요.', code: 'no-member'));
     }
     if (isCreating.value) {
       return const Failed(
@@ -72,7 +61,6 @@ class CreateChatController extends GetxController {
     try {
       return await _repository.createRoom(
         name: name.value,
-        imageUrl: imageUrl.value,
         members: Map.of(members),
         managerEmail: email,
       );
