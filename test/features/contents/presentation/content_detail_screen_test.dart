@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -68,14 +66,6 @@ class _FakeProfileRepository implements ProfileRepository {
   @override
   Future<Result<List<UserProfile>>> fetchAllProfiles() async =>
       const Success([]);
-
-  @override
-  Future<Result<void>> updateProfileImage(String uid, File image) =>
-      throw UnimplementedError();
-
-  @override
-  Future<Result<void>> updateBackgroundImage(String uid, File image) =>
-      throw UnimplementedError();
 
   @override
   Future<Result<void>> updateIntroduction(String uid, String introduction) =>

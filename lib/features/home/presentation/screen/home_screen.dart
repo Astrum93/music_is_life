@@ -15,8 +15,6 @@ import 'package:music_is_life/features/profile/domain/entities/user_profile.dart
 import 'package:music_is_life/features/search/presentation/screen/search_fragment.dart';
 
 /// 홈: 내 일기장 카드, N년 전 오늘, 기념 카드, 지금 공감받는 이야기, YouTube에서 곡 찾기
-///
-/// 리디자인 라이트 테마를 이 화면에만 먼저 적용한다. 다른 탭은 옮기기 전까지 다크 테마다.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 

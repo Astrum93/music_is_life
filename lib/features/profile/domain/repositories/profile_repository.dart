@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:music_is_life/core/result/result.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 
@@ -13,12 +11,6 @@ abstract interface class ProfileRepository {
 
   /// 모든 사용자의 프로필 (친구 추천·검색용)
   Future<Result<List<UserProfile>>> fetchAllProfiles();
-
-  /// 프로필 사진을 올리고 UserInfo에 반영한다.
-  Future<Result<void>> updateProfileImage(String uid, File image);
-
-  /// 프로필 배경 사진을 올리고 UserInfo에 반영한다.
-  Future<Result<void>> updateBackgroundImage(String uid, File image);
 
   /// 프로필 소개를 바꾼다.
   Future<Result<void>> updateIntroduction(String uid, String introduction);

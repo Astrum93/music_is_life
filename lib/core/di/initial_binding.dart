@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:music_is_life/features/auth/domain/repositories/auth_repository.dart';
@@ -18,7 +17,6 @@ class InitialBinding extends Bindings {
   void dependencies() {
     Get.put<FirebaseAuth>(FirebaseAuth.instance, permanent: true);
     Get.put<FirebaseFirestore>(FirebaseFirestore.instance, permanent: true);
-    Get.put<FirebaseStorage>(FirebaseStorage.instance, permanent: true);
 
     Get.put<AuthRepository>(
       FirebaseAuthRepository(Get.find<FirebaseAuth>(), Get.find<FirebaseFirestore>()),
@@ -28,7 +26,7 @@ class InitialBinding extends Bindings {
 
     // 프로필은 마이페이지뿐 아니라 게시물 작성자 표시 등 여러 기능에서 쓴다.
     Get.put<ProfileRepository>(
-      FirebaseProfileRepository(Get.find<FirebaseFirestore>(), Get.find<FirebaseStorage>()),
+      FirebaseProfileRepository(Get.find<FirebaseFirestore>()),
       permanent: true,
     );
   }
