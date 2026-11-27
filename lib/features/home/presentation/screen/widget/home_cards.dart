@@ -8,7 +8,7 @@ import 'package:music_is_life/features/contents/domain/entities/content.dart';
 import 'package:music_is_life/features/contents/presentation/contents_controller.dart';
 import 'package:music_is_life/features/contents/presentation/story_stats.dart';
 import 'package:music_is_life/features/friends/presentation/widgets/follow_button.dart';
-import 'package:music_is_life/features/home/presentation/screen/widget/user_info_mini.dart';
+import 'package:music_is_life/features/profile/presentation/widgets/mini_profile_sheet.dart';
 import 'package:music_is_life/features/music/presentation/widgets/track_player_sheet.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 
@@ -254,17 +254,8 @@ class HomeStoryCard extends StatelessWidget {
     }
   }
 
-  void _openAuthor(BuildContext context, UserProfile profile) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (_) => UserInfoMini(
-        profileImage: profile.profileImageUrl,
-        uid: profile.uid,
-        name: profile.userName,
-        userProfileInfo: profile.introduction,
-      ),
-    );
-  }
+  void _openAuthor(BuildContext context, UserProfile profile) =>
+      showMiniProfile(context, profile);
 
   @override
   Widget build(BuildContext context) {

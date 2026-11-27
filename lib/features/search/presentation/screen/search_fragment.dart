@@ -9,7 +9,7 @@ import 'package:music_is_life/features/contents/presentation/contents_controller
 import 'package:music_is_life/features/contents/presentation/screens/content_detail_screen.dart';
 import 'package:music_is_life/features/contents/presentation/story_stats.dart';
 import 'package:music_is_life/features/friends/presentation/widgets/follow_button.dart';
-import 'package:music_is_life/features/home/presentation/screen/widget/user_info_mini.dart';
+import 'package:music_is_life/features/profile/presentation/widgets/mini_profile_sheet.dart';
 import 'package:music_is_life/features/profile/domain/entities/user_profile.dart';
 import 'package:music_is_life/features/search/presentation/search_controller.dart';
 
@@ -223,15 +223,7 @@ class UserResultCard extends StatelessWidget {
       borderRadius: AppRadius.borderL,
       child: InkWell(
         borderRadius: AppRadius.borderL,
-        onTap: () => showModalBottomSheet<void>(
-          context: context,
-          builder: (_) => UserInfoMini(
-            profileImage: user.profileImageUrl,
-            uid: user.uid,
-            name: user.userName,
-            userProfileInfo: user.introduction,
-          ),
-        ),
+        onTap: () => showMiniProfile(context, user),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.m),
           child: Column(
