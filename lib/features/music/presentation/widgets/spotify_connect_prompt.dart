@@ -8,7 +8,6 @@ import 'package:music_is_life/features/music/presentation/music_controller.dart'
 /// Spotify 계정이 연결되지 않았을 때 보여주는 안내와 연결 버튼
 ///
 /// 곡 검색은 사용자의 Spotify 계정으로 받은 토큰(PKCE)으로 한다. 처음 한 번만 연결하면 된다.
-/// 색은 토큰을 따르므로 라이트(곡 고르기)·다크(아직 옮기지 않은 화면) 어느 쪽에서도 보인다.
 class SpotifyConnectPrompt extends StatelessWidget {
   const SpotifyConnectPrompt({super.key});
 

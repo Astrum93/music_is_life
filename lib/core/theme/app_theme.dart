@@ -5,28 +5,14 @@ import 'package:music_is_life/core/theme/tokens/tokens.dart';
 ///
 /// 여기서 정한 값은 스타일을 직접 지정하지 않은 위젯에 자동으로 적용된다.
 ///
-/// - [light]: 리디자인 시안의 테마. 화면을 모두 옮기면 앱 기본 테마로 바꾼다.
-/// - [dark]: 기존 화면을 옮기는 동안 앱이 쓰는 테마. 기존 화면은 검은 배경에
-///   흰 글자를 직접 지정해 두어서, 지금 [light]로 바꾸면 글자가 보이지 않는다.
+/// - [light]: 앱 기본 테마 (리디자인 시안)
+/// - [dark]: 다크 모드를 위해 토큰만 맞춰 둔 테마. 아직 앱에서 쓰지 않는다.
 abstract final class AppTheme {
-  static ThemeData get light => _build(
-        AppColorTokens.light,
-        Brightness.light,
-        withInputTheme: true,
-      );
+  static ThemeData get light => _build(AppColorTokens.light, Brightness.light);
 
-  static ThemeData get dark => _build(
-        AppColorTokens.dark,
-        Brightness.dark,
-        // InputDecoration을 직접 쓰는 기존 입력창 모양이 바뀌지 않도록 뺀다.
-        withInputTheme: false,
-      );
+  static ThemeData get dark => _build(AppColorTokens.dark, Brightness.dark);
 
-  static ThemeData _build(
-    AppColorTokens c,
-    Brightness brightness, {
-    required bool withInputTheme,
-  }) {
+  static ThemeData _build(AppColorTokens c, Brightness brightness) {
     final colorScheme = ColorScheme(
       brightness: brightness,
       primary: c.accent,
@@ -133,37 +119,35 @@ abstract final class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderM),
       ),
-      inputDecorationTheme: withInputTheme
-          ? InputDecorationTheme(
-              filled: true,
-              fillColor: c.surface,
-              hintStyle: textTheme.bodyLarge?.copyWith(color: c.textTertiary),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.l,
-                vertical: AppSpacing.m,
-              ),
-              border: const OutlineInputBorder(
-                borderRadius: AppRadius.borderM,
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: const OutlineInputBorder(
-                borderRadius: AppRadius.borderM,
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderM,
-                borderSide: BorderSide(color: c.textPrimary, width: 1.5),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderM,
-                borderSide: BorderSide(color: c.danger, width: 1.2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderM,
-                borderSide: BorderSide(color: c.danger, width: 1.5),
-              ),
-            )
-          : null,
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: c.surface,
+        hintStyle: textTheme.bodyLarge?.copyWith(color: c.textTertiary),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.l,
+          vertical: AppSpacing.m,
+        ),
+        border: const OutlineInputBorder(
+          borderRadius: AppRadius.borderM,
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.borderM,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.borderM,
+          borderSide: BorderSide(color: c.textPrimary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: AppRadius.borderM,
+          borderSide: BorderSide(color: c.danger, width: 1.2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: AppRadius.borderM,
+          borderSide: BorderSide(color: c.danger, width: 1.5),
+        ),
+      ),
       filledButtonTheme: FilledButtonThemeData(style: primaryButtonStyle),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(

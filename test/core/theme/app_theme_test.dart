@@ -33,7 +33,7 @@ void main() {
     });
   });
 
-  group('AppTheme.dark (기존 화면용)', () {
+  group('AppTheme.dark (다크 모드 준비용)', () {
     final theme = AppTheme.dark;
 
     test('다크 색상 토큰이 등록된다', () {
@@ -41,8 +41,9 @@ void main() {
       expect(theme.brightness, Brightness.dark);
     });
 
-    test('기존 입력창 모양을 지키려고 입력창 테마는 넣지 않는다', () {
-      expect(theme.inputDecorationTheme.filled, isFalse);
+    test('입력창도 다크 토큰으로 채운다', () {
+      expect(theme.inputDecorationTheme.filled, isTrue);
+      expect(theme.inputDecorationTheme.fillColor, AppColorTokens.dark.surface);
     });
   });
 

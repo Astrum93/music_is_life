@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/core/error/failure.dart';
@@ -27,12 +26,6 @@ class _FakeProfileRepository implements ProfileRepository {
 
   @override
   Future<Result<List<UserProfile>>> fetchAllProfiles() async => const Success([]);
-
-  @override
-  Future<Result<void>> updateProfileImage(String uid, File image) => _record('profile:$uid');
-
-  @override
-  Future<Result<void>> updateBackgroundImage(String uid, File image) => _record('background:$uid');
 
   @override
   Future<Result<void>> updateIntroduction(String uid, String introduction) =>
@@ -64,19 +57,6 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(controller.profile.value, profile);
-  });
-
-  test('사진 종류에 따라 프로필/배경 업로드를 호출한다', () async {
-    final file = File('x.png');
-
-    final f1 = controller.updateImage(ProfileImageKind.profile, file);
-    repository.pending!.complete(const Success(null));
-    await f1;
-    final f2 = controller.updateImage(ProfileImageKind.background, file);
-    repository.pending!.complete(const Success(null));
-    await f2;
-
-    expect(repository.calls, ['profile:u1', 'background:u1']);
   });
 
   test('저장 중에는 isSaving이 true이고, 실패해도 끝나면 false다', () async {
