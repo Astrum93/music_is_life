@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_is_life/core/result/result.dart';
+import 'package:music_is_life/core/theme/app_theme.dart';
+import 'package:music_is_life/core/theme/tokens/tokens.dart';
 import 'package:music_is_life/core/widgets/scaffold/app_snackbar.dart';
 import 'package:music_is_life/features/profile/presentation/profile_controller.dart';
 
-/// 프로필 소개 변경 다이얼로그
+/// 소개 수정 창
 ///
 /// 예전에는 입력창이 비어 있는 채로 열려서, 그냥 Save를 누르면 소개가 지워졌다.
 /// 지금은 현재 소개를 채운 채로 연다.
 class EditIntroductionDialog extends StatefulWidget {
   const EditIntroductionDialog({super.key});
 
+  /// 소개 최대 글자 수 (미니 프로필에서 네 줄 안에 보이는 정도)
+  static const maxLength = 100;
+
   static Future<void> show(BuildContext context) => showDialog(
         context: context,
-        builder: (_) => const Dialog(child: EditIntroductionDialog()),
+        builder: (_) => Theme(
+          data: AppTheme.light,
+          child: const EditIntroductionDialog(),
+        ),
       );
 
   @override
@@ -34,7 +42,8 @@ class _EditIntroductionDialogState extends State<EditIntroductionDialog> {
   }
 
   Future<void> _save() async {
-    final result = await _controller.updateIntroduction(_textController.text);
+    final result =
+        await _controller.updateIntroduction(_textController.text.trim());
     if (!mounted) return;
     switch (result) {
       case Success():
@@ -46,73 +55,75 @@ class _EditIntroductionDialogState extends State<EditIntroductionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    const border = OutlineInputBorder(
-      borderSide: BorderSide(color: Colors.transparent),
-      borderRadius: BorderRadius.all(Radius.circular(10)),
-    );
-
-    return Container(
-      padding: const EdgeInsets.only(top: 10),
-      width: 150,
-      height: 300,
-      decoration: BoxDecoration(
-        color: Colors.black,
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(30),
-      ),
+    final c = context.colors;
+    final t = context.textStyles;
+    return Dialog(
+      backgroundColor: c.surface,
+      surfaceTintColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXxl),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              '프로필 소개 변경',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+            Text('소개 수정', style: t.headlineSmall?.copyWith(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text('미니 프로필과 내 일기장에 보여요.',
+                style: t.bodySmall?.copyWith(color: c.textSecondary)),
+            const SizedBox(height: AppSpacing.l),
+            TextField(
+              controller: _textController,
+              autofocus: true,
+              minLines: 3,
+              maxLines: 5,
+              maxLength: EditIntroductionDialog.maxLength,
+              keyboardType: TextInputType.multiline,
+              style: t.bodyMedium,
+              decoration: InputDecoration(
+                hintText: '어떤 노래로 위로받는 사람인지 적어 보세요.',
+                fillColor: c.background,
               ),
             ),
-            const SizedBox(height: 30),
-
-            // 프로필 소개 입력
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                border: Border.all(color: Colors.grey),
-              ),
-              child: TextField(
-                controller: _textController,
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: '내용을 입력해 주세요.',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  enabledBorder: border,
-                  focusedBorder: border,
-                  contentPadding: EdgeInsets.all(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // 저장 버튼
-            Obx(
-              () => _controller.isSaving.value
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : TextButton.icon(
-                      onPressed: _save,
-                      icon: const Icon(Icons.save_alt_rounded),
-                      label: const Text(
-                        'Save',
-                        style: TextStyle(color: Colors.grey),
+            const SizedBox(height: AppSpacing.m),
+            Obx(() {
+              final saving = _controller.isSaving.value;
+              return Row(
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                      onPressed:
+                          saving ? null : () => Navigator.of(context).pop(),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                        backgroundColor: c.background,
+                        foregroundColor: c.textPrimary,
                       ),
+                      child: const Text('취소'),
                     ),
-            ),
+                  ),
+                  const SizedBox(width: AppSpacing.s),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: saving ? null : _save,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                        disabledBackgroundColor: c.textPrimary,
+                        disabledForegroundColor: c.surface,
+                      ),
+                      child: saving
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: c.surface),
+                            )
+                          : const Text('저장'),
+                    ),
+                  ),
+                ],
+              );
+            }),
           ],
         ),
       ),

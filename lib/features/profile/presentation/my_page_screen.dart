@@ -40,7 +40,7 @@ class _MyScreenState extends State<MyScreen> {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
-  /// 소개 수정 다이얼로그는 기존 다크 디자인이라, 라이트 테마 바깥의 context(State의 context)로 연다.
+  /// 소개 수정 창은 자체적으로 라이트 테마를 입혀서 연다.
   void _editIntroduction() => EditIntroductionDialog.show(context);
 
   /// 나의 인생곡을 Spotify 앱으로 재생한다.
@@ -236,10 +236,10 @@ class _Actions extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final shortcuts = <(String, IconData, VoidCallback)>[
-      ('친구 추가', Icons.person_add_alt_1_outlined, onAddFriends),
+      ('친구 찾기', Icons.person_add_alt_1_outlined, onAddFriends),
       ('메시지', Icons.chat_bubble_outline_rounded, onMessages),
-      ('음악 모음', Icons.library_music_outlined, onMusic),
-      ('즐겨찾기', Icons.star_outline_rounded, onFavorites),
+      ('음악 컬렉션', Icons.library_music_outlined, onMusic),
+      ('친구 목록', Icons.people_outline_rounded, onFavorites),
       ('YouTube', Icons.smart_display_outlined, onYoutube),
     ];
     return Column(
