@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:music_is_life/core/result/result.dart';
 import 'package:music_is_life/features/messenger/domain/entities/chat.dart';
 
@@ -18,13 +16,11 @@ abstract interface class MessengerRepository {
     required String text,
   });
 
-  /// 채팅방 대표 사진을 올리고 다운로드 URL을 돌려준다.
-  Future<Result<String>> uploadRoomImage(File image);
-
   /// 채팅방을 만든다. [members]는 uid -> 이름이고, 만드는 사람도 포함해야 한다.
+  ///
+  /// 개인 사진은 올리지 않으므로 채팅방 사진은 없다. 목록에서는 상대 멤버의 인생곡 앨범을 보여준다.
   Future<Result<ChatRoom>> createRoom({
     required String name,
-    required String imageUrl,
     required Map<String, String> members,
     required String managerEmail,
   });

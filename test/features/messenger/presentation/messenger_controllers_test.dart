@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_is_life/core/error/failure.dart';
@@ -39,17 +38,13 @@ class _FakeMessengerRepository implements MessengerRepository {
   }
 
   @override
-  Future<Result<String>> uploadRoomImage(File image) async => const Success('https://img/room.png');
-
-  @override
   Future<Result<ChatRoom>> createRoom({
     required String name,
-    required String imageUrl,
     required Map<String, String> members,
     required String managerEmail,
   }) async {
     createdMembers = members;
-    return Success(ChatRoom(id: 'new', name: name, imageUrl: imageUrl));
+    return Success(ChatRoom(id: 'new', name: name, memberUids: members.keys.toList()));
   }
 }
 
@@ -130,16 +125,23 @@ void main() {
       expect(repository.createdMembers, isNull);
     });
 
-    test('사진을 올리면 imageUrl이 채워지고, 만들 때 멤버를 함께 넘긴다', () async {
-      await controller.uploadImage(File('x.png'));
+    test('친구를 고르지 않으면(나 혼자면) 만들지 않는다', () async {
+      controller.name.value = '방';
+
+      final result = await controller.create();
+
+      expect((result as Failed).failure, isA<InvalidRequestFailure>());
+      expect(repository.createdMembers, isNull);
+    });
+
+    test('이름과 친구가 있으면 사진 없이 멤버를 함께 넘겨 만든다', () async {
       controller
         ..name.value = '방'
         ..toggleMember('you', '너');
 
       final result = await controller.create();
 
-      expect(controller.imageUrl.value, 'https://img/room.png');
-      expect(result.valueOrNull?.imageUrl, 'https://img/room.png');
+      expect(result.valueOrNull?.imageUrl, '');
       expect(repository.createdMembers, {'me': '나', 'you': '너'});
     });
   });

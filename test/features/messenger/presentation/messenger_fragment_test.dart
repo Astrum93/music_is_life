@@ -45,13 +45,8 @@ class _FakeMessengerRepository implements MessengerRepository {
       throw UnimplementedError();
 
   @override
-  Future<Result<String>> uploadRoomImage(File image) =>
-      throw UnimplementedError();
-
-  @override
   Future<Result<ChatRoom>> createRoom(
           {required String name,
-          required String imageUrl,
           required Map<String, String> members,
           required String managerEmail}) =>
       throw UnimplementedError();
